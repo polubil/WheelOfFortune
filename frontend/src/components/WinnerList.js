@@ -2,6 +2,7 @@ import React, { Component, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'bootstrap';
 import { Wheel } from 'react-custom-roulette'
+import AuthForm from './AuthForm';
 
 function WinnerListElement(props) {
   return (
@@ -59,12 +60,14 @@ class WinnerList extends Component {
 
 
 function Button(props) {
-  if (props.title_second_line) {
+  const buttonDisabled = props.buttonDisabled
+
+  if (buttonDisabled) {
     return (
       <>
-        <button className='d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
+        <button className='d-inline-flex p-1 flex-column button-group-element' disabled onClick={props.onClick}>
           <span className='info-group-text p-2'>{props.title_first_line}</span> 
-          <span className='info-group-text p-2'>{props.title_second_line}</span> 
+          {props.title_second_line && <span className='info-group-text p-2'>{props.title_second_line}</span>} 
         </button>
       </>
     )
@@ -72,7 +75,8 @@ function Button(props) {
     return (
       <>
         <button className='d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
-          <span className='info-group-text mx-3 fs-2 my-2'>{props.title_first_line}</span> 
+          <span className='info-group-text p-2'>{props.title_first_line}</span> 
+          {props.title_second_line && <span className='info-group-text p-2'>{props.title_second_line}</span>} 
         </button>
       </>
     )
@@ -82,7 +86,7 @@ function Button(props) {
 function Jackpot(props) {
   return (
     <>
-      <div className='d-inline-flex p-1 flex-column info-group-element'>
+      <div className='d-inline-flex p-1 align-items-center justify-content-center flex-column info-group-element'>
         <span className='info-group-text p-2'>JACKPOT</span>
         <span className='info-group-text p-2'>1000</span>
       </div>
@@ -114,7 +118,7 @@ function Layout(props) {
 function Balance(props) {
   return (
     <>
-      <div className='d-inline-flex p-1 flex-column info-group-element'>
+      <div className='d-inline-flex p-1 align-items-center justify-content-center flex-column info-group-element'>
         <span className='info-group-text p-2'>BALANCE</span>
         <span className='info-group-text p-2'>{props.balance}</span>
       </div>
@@ -133,6 +137,7 @@ class InfoGroup extends React.Component {
       layoutFirstText: props.layoutFirstText,
       layoutSecondText: props.layoutSecondText,
       layoutImage: props.layoutImage,
+      buttonDisabled: props.buttonDisabled,
     },
     this.handleClickHideLayout = this.handleClickHideLayout.bind(this);
     this.setState = this.setState.bind(this);
@@ -165,6 +170,11 @@ class InfoGroup extends React.Component {
         layout: this.props.layout
       })
     }
+    if (!(this.state.buttonDisabled == this.props.buttonDisabled)) {
+      this.setState({
+        buttonDisabled: this.props.buttonDisabled
+      })
+    }
   }
   
   handleClickHideLayout() {
@@ -180,8 +190,14 @@ class InfoGroup extends React.Component {
         <div className='d-flex m-2 flex-row justify-content-between info-group'>
           <Balance balance={this.state.balance}/>
           <Jackpot />
-          <Button title_first_line="SPIN" title_second_line="WHEEL" onClick={this.props.onClick}/>
-          <Layout layoutImage={this.state.layoutImage} firstText={this.state.layoutFirstText} secondText={this.state.layoutSecondText}  hideLayout={this.props.hideLayout} layout={this.state.layout}/>
+          <Button buttonDisabled={this.state.buttonDisabled} title_first_line="SPIN" title_second_line="WHEEL" onClick={this.props.onClick}/>
+          <Layout 
+            layoutImage={this.state.layoutImage}
+            firstText={this.state.layoutFirstText}        
+            secondText={this.state.layoutSecondText}
+            hideLayout={this.props.hideLayout} 
+            layout={this.state.layout}
+          />
         </div>
       </>
     )
@@ -201,7 +217,7 @@ class WheelContainer extends React.Component {
 
   async getPrizes() {
     let obj;
-    const res = await fetch('http://127.0.0.1:8000/API/Prizes')
+    const res = await fetch('/API/Prizes')
     obj = await res.json();
     let data = []
 
@@ -274,6 +290,7 @@ class GameContainer extends React.Component {
       mustSpin: false,
       layoutFirstText: null,
       layoutSecondText: null,
+      buttonDisabled: false,
     };
     this.handleClick = this.handleClick.bind(this)
     this.hideLayout = this.hideLayout.bind(this)
@@ -330,7 +347,10 @@ class GameContainer extends React.Component {
 
   startWheelSpin() {
     if (this.state.prize >= 0) {
-      this.setState({mustSpin: true,})
+      this.setState({
+        mustSpin: true,
+        buttonDisabled: true,
+      })
     }
   }
 
@@ -367,6 +387,7 @@ class GameContainer extends React.Component {
       layout: true,
       balance: this.state.responseBalance,
       responseBalance: null,
+      buttonDisabled: false,
     })
     this.props.updateWinners()
   }
@@ -381,11 +402,12 @@ class GameContainer extends React.Component {
     return (
       <>
         <span className='main-title my-2 fs-1'>
-          WHEEL OF FORTUNE
+          WHEEL OF FORTUNE!
         </span>
         <div className='d-flex flex-column h-25 justify-content-between'>
           <WheelContainer startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
           <InfoGroup 
+            buttonDisabled={this.state.buttonDisabled}
             layoutImage={this.state.layoutImage}
             hideLayout={this.hideLayout} 
             layoutFirstText={this.state.layoutFirstText} 
@@ -408,13 +430,15 @@ class App extends React.Component {
       placeholder: "Loading",
       balance: 0,
       username: "",
+      userLoggedIn: null,
+      
     };
     this.getLastWinners = this.getLastWinners.bind(this)
   }
 
   async getUserBalance() {
     let obj;
-    const res = await fetch('http://127.0.0.1:8000/API/UserBalance?format=json')
+    const res = await fetch('/API/UserBalance?format=json')
     obj = await res.json();
     this.setState({
       balance: obj['user_balance'],
@@ -423,9 +447,19 @@ class App extends React.Component {
     console.log(obj['user_balance'])
   }
 
+  async isUserLoggedIn() {
+    let obj;
+    const res = await fetch("/API/LoginChecker")
+    obj = await res.json();
+    this.setState({
+      userLoggedIn: obj,
+    })
+    console.log(this.state.userLoggedIn)
+  }
+
   async getLastWinners() {
     let obj;
-    const res = await fetch('http://127.0.0.1:8000/API/Last20Winners?format=json')
+    const res = await fetch('/API/Last20Winners?format=json')
     obj = await res.json();
     this.setState({
       winnersList: obj,
@@ -434,25 +468,32 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    this.isUserLoggedIn()
     this.getUserBalance()
-    this.getLastWinners()
+    this.getLastWinners()      
   }; 
 
 
   render() {
-    return (
-      <>
-        <div className='p-1 mw-50 app-container container-sm d-flex flex-column justify-content-center text-center h-100'>
-          <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
-          <WinnerList winnersList={this.state.winnersList} />        
-        </div>
-      </>
-    )
+    if (this.state.userLoggedIn) {
+      return (
+        <>
+          <div className='p-1 mw-50 app-container container-sm d-flex flex-column justify-content-center text-center h-100'>
+            <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
+            <WinnerList winnersList={this.state.winnersList} />        
+          </div>
+        </>
+      )
+    } else {
+      return (
+        <AuthForm></AuthForm>
+      )
+    }
   }
 }
 
 export default App;
 
 const container = document.getElementById("winners-list");
-const root = createRoot(container); // createRoot(container!) if you use TypeScript
+const root = createRoot(container);
 root.render(<App tab="home"/>);

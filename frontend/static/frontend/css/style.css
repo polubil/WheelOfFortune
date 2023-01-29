@@ -2,6 +2,7 @@
 html {
     min-height:100%;/* make sure it is at least as tall as the viewport */
     position:relative;
+    overflow-x: hidden;
 }
 
 body {
@@ -11,6 +12,8 @@ body {
   flex-wrap: nowrap;
   flex-direction: column;
   justify-content: center;
+  background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);
+  overflow-x: hidden;
 }
 
 .winner-list-text-elem {
@@ -82,6 +85,14 @@ body {
     color: #FFFFFF;
     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   }
+
+.auth-container {
+    height: 100vh;
+}
+
+.mdb-container {
+    max-width: 500px;
+}
 
 .info-group-element {
     box-sizing: border-box;

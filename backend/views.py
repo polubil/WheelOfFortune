@@ -7,6 +7,9 @@ from rest_framework.views import APIView
 from .serializers import WinnersSerializers
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import authenticate, login
+import json
+from django.contrib.auth.models import User
 
 class index(TemplateView):
     template_name = "index.html"
@@ -103,7 +106,7 @@ class Spinner(APIView):
 
 class Prizes(APIView):
 
-    PRIZES = [0, 11, 22, 33, 44, 55, 66, 77]
+    PRIZES = [1000, 200, 400, 750, 250, 10, 150, 1000]
 
     @classmethod
     def get(cls, request):
@@ -120,3 +123,46 @@ class LastWinners(APIView):
         winners = Winners.last_20_winners()
         winners_serializer = WinnersSerializers(winners, many=True)
         return Response(winners_serializer.data)
+
+class LoginChecker(APIView):
+
+    def get(self, request):
+        return Response(request.user.is_authenticated)
+
+
+class Login(APIView):
+
+    def post(self, request):
+        data = json.loads(request.body.decode("utf-8"))
+        username = data.get("username")
+        password = data.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return Response({"message": "Success!"})
+        else:
+            return Response({"message": "Authenfication failed."})
+
+class Register(APIView):
+
+    def post(self, request):
+        data = json.loads(request.body.decode("utf-8"))
+        username = data.get("username")
+        password1 = data.get("password1")
+        password2 = data.get("password2")
+        messages = []
+        if password2 != password1:
+            messages.append("Passwords do not match.")
+        if not (3 < len(username) < 20):
+            messages.append("Username length must be at least 4 and no more than 20 characters.")
+        if password1 == password2 and len(password1) < 4:
+            messages.append("Password length must be at least 4 characters.")
+        if len(messages) == 0:
+            user = User.objects.create_user(username = username, password = password1)
+            user.save()
+            user = authenticate(request, username=username, password=password1)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        print(messages, username, password1, password2)
+        return Response({"messages": messages})
+
+        

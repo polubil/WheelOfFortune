@@ -22,6 +22,7 @@
     "postcss": "^8.4.21",
     "postcss-loader": "^7.0.2",
     "react": "^18.2.0",
+    "react-custom-roulette": "file:react-custom-roulette",
     "react-devtools": "^4.14.0",
     "react-devtools-core": "^4.14.0",
     "react-dom": "^18.2.0",
@@ -31,9 +32,11 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
+    "fs": "^0.0.1-security",
     "jquery": "^3.6.3",
-    "popper.js": "^1.16.1",
-    "react-custom-roulette": "file:react-wheel"
+    "mdb-react-ui-kit": "^5.1.0",
+    "popper.js": "^1.16.1"
   }
 }
