@@ -1,8 +1,16 @@
 from rest_framework import serializers
-from .models import Winners, UserBalance
+
+class UserSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+
+class ProfileSerializer(serializers.Serializer):
+    user = UserSerializer()
+    picture = serializers.ImageField()
 
 class WinnersSerializers(serializers.Serializer):
     id = serializers.IntegerField()
-    winner = serializers.CharField(max_length=100)
+    winner = ProfileSerializer()
     winning_amount = serializers.IntegerField()
     win_date = serializers.DateTimeField()

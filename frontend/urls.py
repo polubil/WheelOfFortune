@@ -4,5 +4,5 @@ from .views import Index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('fr', Index.as_view(), name="DRF"),
+    path('', Index.as_view(), name="DRF"),
 ]

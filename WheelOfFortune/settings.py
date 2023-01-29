@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-txn3!ut6yo2crjpqx7uu)v0q=qj6dctuk5jb)^fq&)m-3bep8b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,10 +37,33 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'backend',
     'rest_framework',
-    'frontend'
+    'frontend',
+    'rest_framework.authtoken',
+    'VKAuth',
 ]
+
+CLIENT_ID = 51554511
+REDIRECT_URI = "http://localhost:8000/"
+SCOPE = "email, first_name, last_name"
+CLIENT_SECRET = "kMEL9u3y0wmr71RXkEhk"
+
+TAKE_PROFILE_PICTURE = True
+PROFILE_MODEL = 'UserProfile'
+APP_LABEL = 'backend'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'VKAuth.backends.CustomBackend'
+]
+
+SITE_ID = 1
+
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+LOGIN_REDIRECT_URL = 'index'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'VKAuth.middlewares.CheckTokenMW',
 ]
 
 ROOT_URLCONF = 'WheelOfFortune.urls'
@@ -65,6 +89,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
