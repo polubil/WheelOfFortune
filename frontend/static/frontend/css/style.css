@@ -1,0 +1,155 @@
+
+html {
+    min-height:100%;/* make sure it is at least as tall as the viewport */
+    position:relative;
+}
+
+body {
+  height:100%;
+  display: flex;
+  align-content: center;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.winner-list-text-elem {
+    font-family: 'Montserrat';
+    font-weight: 1000;
+    font-size: 130%;
+    color: #FFFFFF;
+    text-shadow: -1px -1px 3px rgb(0 0 0 / 34%);
+}
+
+.list-element {
+    background: linear-gradient(180deg, #62B5F0 0%, #046EBA 100%);
+    box-shadow: 1px 3px 3px rgba(16, 46, 131, 0.5);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.winners-container {
+    background: linear-gradient(180deg, #3598DF 0%, #006BB8 100%);
+    box-shadow: inset 1px 5px 4px #1B379F;
+    border-radius: 15px;
+}
+
+.winners-title {
+    font-family: 'Luckiest Guy';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 30px;
+    text-align: center;
+    color: #FFFFFF;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.button-group-element {
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    background: linear-gradient(#8B0000, #8B0000);
+    box-shadow: inset 0px 2px 2px #400000;
+    border-radius: 10px;
+    margin: 3px;
+    border: solid 3px #FFCD7E;
+    text-align: center;
+    line-height: 2vh;
+    width: 30%;
+}
+
+.myLayout {
+    overflow:hidden;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    min-width: 100%;
+    min-height: 100%;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0
+}
+
+  .winner-text {
+    font-family: 'Luckiest Guy';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 60px;
+    line-height: 60px;
+    text-align: center;
+    color: #FFFFFF;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  }
+
+.info-group-element {
+    box-sizing: border-box;
+    background: linear-gradient(327.68deg, #588DD8 -2.66%, #324FA5 80.63%);
+    box-shadow: inset 0px 2px 2px #400000;
+    border-radius: 10px;
+    margin: 3px;
+    border: solid 3px #FFCD7E;
+    text-align: center;
+    width: 30%;
+  }
+
+.info-group-text {
+    font-family: 'Luckiest Guy';
+    font-weight: 400;
+    font-size: 2.5vh;
+    line-height: .7vh;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #FAC269;
+    text-shadow: -1px -1px 0px #B46E00;
+    vertical-align: middle;
+    padding: 10px 0;
+  }
+
+.my-container {
+    position: relative;
+    display: inline-flex;
+    aspect-ratio: 1 / 1;
+    text-align: center;
+    background: linear-gradient(180deg, #3496DF 11.29%, #016CB9 94.98%);
+    box-shadow: inset 1px 5px 4px #1B379F;
+    border-radius: 15px;
+    justify-content: center;
+    align-items: center;
+    }
+
+.bhdLno {
+    z-index: 0 !important;
+    width: 92% !important;
+    height: 92% !important;
+    top: 0.4vh;
+    transform: rotate(-45deg);
+    max-height: none !important;
+    max-width: none !important;
+  }
+
+img[alt~="roulette-static"] {
+    position: relative;
+    z-index: 1;
+    width: 7%;
+    right: -30%;
+    top: 13%;
+    transform: rotate(45deg);
+    content: url("../images/wheel-pointer 1.svg"); 
+}
+
+.main-title {
+    top: 5vh;
+    font-family: 'Luckiest Guy';
+    font-weight: 400;
+    line-height: 4vh;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.app-container {
+    background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);
+}

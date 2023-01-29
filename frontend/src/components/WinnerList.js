@@ -1,26 +1,21 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'bootstrap';
 import { Wheel } from 'react-custom-roulette'
 
 function WinnerListElement(props) {
-  const ListStyle = (`
-  .list-element {
-    background: linear-gradient(180deg, #62B5F0 0%, #046EBA 100%);
-    box-shadow: 1px 3px 3px rgba(16, 46, 131, 0.5);
-    border-radius: 5px;
-    padding: 10px;
-    margin: 10px;
-  }
-  `)
-
   return (
     <>
-    <style>
-      {ListStyle}
-    </style>
-    <div className="list-element">
-      <span>{props.username} {props.winning_amount} {props.win_date}</span>
+    <div className="list-element align-items-center align-content-center d-flex justify-content-between px-2">
+      <span className='winner-list-text-elem'>
+        <svg height="50" width="50">
+          <circle cx="25" cy="25" r="20" stroke="black" strokeWidth="3" fill="grey" />
+          Sorry, your browser does not support inline SVG.  
+        </svg> 
+      </span>
+      <span className='winner-list-text-elem'>{props.username}</span>
+      <span className='winner-list-text-elem'>{props.winning_amount}<img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="50px" height="30px"></img></span>
+      <span className='winner-list-text-elem'>{Math.ceil((Date.now()-Date.parse(props.win_date))/1000)} с.</span>
     </div>
     </>
   )
@@ -36,46 +31,19 @@ class WinnerList extends Component {
     };
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.state.data == nextProps.winnersList) {
-      return false
-    } else {
+  componentDidUpdate() {
+    if (!(this.state.data == this.props.winnersList)) {
       this.setState({
-        data: nextProps.winnersList,
+        data: this.props.winnersList,
       })
-      return true
     }
+
   }
 
+
   render() {
-    const myStyle = (`
-    .winners-container {
-      background: linear-gradient(180deg, #3598DF 0%, #006BB8 100%);
-      box-shadow: inset 1px 5px 4px #1B379F;
-      border-radius: 15px;
-    }
-
-    .winners-title {
-      font-family: 'Luckiest Guy';
-      font-style: normal;
-      font-weight: 400;
-      font-size: 30px;
-      line-height: 30px;
-      /* identical to box height */
-
-      text-align: center;
-
-      color: #FFFFFF;
-
-      text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    }
-    `)
-
     return (
       <>
-      <style>
-        {myStyle}
-      </style>
       <div className="winners-container m-2 p-2">
         <span className='winners-title my-3'>WINNERS</span>
         {this.state.data.map(winner => {
@@ -91,42 +59,21 @@ class WinnerList extends Component {
 
 
 function Button(props) {
-  const ButtonInfoGroupElement = (`
-    .button-group-element {
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      background: linear-gradient(#8B0000, #8B0000);
-      box-shadow: inset 0px 2px 2px #400000;
-      border-radius: 10px;
-      margin: 3px;
-      border: solid 3px #FFCD7E;
-      text-align: center;
-      line-height: 2vh;
-    }
-    `)
-
   if (props.title_second_line) {
     return (
       <>
-      <style>
-        {ButtonInfoGroupElement}
-      </style>
-      <button className='btn d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
-        <span className='info-group-text p-2'>{props.title_first_line}</span> 
-        <span className='info-group-text p-2'>{props.title_second_line}</span> 
-      </button>
+        <button className='d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
+          <span className='info-group-text p-2'>{props.title_first_line}</span> 
+          <span className='info-group-text p-2'>{props.title_second_line}</span> 
+        </button>
       </>
     )
   } else {
     return (
       <>
-      <style>
-        {ButtonInfoGroupElement}
-      </style>
-      <button className='d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
-        <span className='info-group-text p-2'>{props.title_first_line}</span> 
-      </button>
+        <button className='d-inline-flex p-1 flex-column button-group-element' onClick={props.onClick}>
+          <span className='info-group-text mx-3 fs-2 my-2'>{props.title_first_line}</span> 
+        </button>
       </>
     )
   }
@@ -135,96 +82,42 @@ function Button(props) {
 function Jackpot(props) {
   return (
     <>
-    <div className='d-inline-flex p-1 flex-column info-group-element'>
-      <span className='info-group-text p-2'>JACKPOT</span>
-      <span className='info-group-text p-2'>1000</span>
-    </div>
+      <div className='d-inline-flex p-1 flex-column info-group-element'>
+        <span className='info-group-text p-2'>JACKPOT</span>
+        <span className='info-group-text p-2'>1000</span>
+      </div>
     </>
-
   )
 }
 
 function Layout(props) {
   const Style = (`
-    html {
-      min-height:100%;/* make sure it is at least as tall as the viewport */
-      position:relative;
-    }
-    body {
-      height:100%; /* force the BODY element to match the height of the HTML element */
-    }
     .myLayout {
-      overflow:hidden;
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.8);
-      min-width: 100%;
-      min-height: 100%;
       display: ${props.layout ? "flex" : "none" };
-      top:0;
-      bottom:0;
-      left:0;
-      right:0
-    }
-
-    .winner-text {
-      font-family: 'Luckiest Guy';
-      font-style: normal;
-      font-weight: 400;
-      font-size: 60px;
-      line-height: 60px;
-      text-align: center;
-      color: #FFFFFF;
-      text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     }
   `)
 
   return (
-    <>
-    <style>
-      {Style}
-    </style>
-    <div className='align-items-center flex-column justify-content-center text-center myLayout'>
-      <span className='winner-text'>{props.text}</span>
-      <Button title_first_line="GREAT" onClick={props.hideLayout}/>
-    </div>
-    </>
-  )
+      <>
+        <style>{Style}</style>
+        <div className='align-items-center flex-column justify-content-center text-center myLayout'>
+          <span className='winner-text my-2'>{props.firstText}</span>
+            {props.layoutImage == true && <span className='winner-text my-2'>{props.secondText}
+              <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="100px" height="65px"></img>
+            </span>}
+          <Button title_first_line="GREAT" onClick={props.hideLayout}/>
+        </div>
+      </>
+    )      
 }
 
 function Balance(props) {
-  const InfoGroupElement = (`
-    .info-group-element {
-      box-sizing: border-box;
-      background: linear-gradient(327.68deg, #588DD8 -2.66%, #324FA5 80.63%);
-      box-shadow: inset 0px 2px 2px #400000;
-      border-radius: 10px;
-      margin: 3px;
-      border: solid 3px #FFCD7E;
-      text-align: center;
-    }
-    .info-group-text {
-      font-family: 'Luckiest Guy';
-      font-weight: 400;
-      font-size: 2.5vh;
-      line-height: .7vh;
-      text-align: center;
-      letter-spacing: 1px;
-      color: #FAC269;
-      text-shadow: -1px -1px 0px #B46E00;
-      vertical-align: middle;
-      padding: 10px 0;
-    }
-  `)
-
   return (
     <>
-    <style>
-      {InfoGroupElement}
-    </style>
-    <div className='d-inline-flex p-1 flex-column info-group-element'>
-      <span className='info-group-text p-2'>BALANCE</span>
-      <span className='info-group-text p-2'>{props.balance}</span>
-    </div>
+      <div className='d-inline-flex p-1 flex-column info-group-element'>
+        <span className='info-group-text p-2'>BALANCE</span>
+        <span className='info-group-text p-2'>{props.balance}</span>
+      </div>
     </>
 
   )
@@ -237,7 +130,9 @@ class InfoGroup extends React.Component {
       balance: props.balance,
       loaded: false,
       layout: false,
-      layoutText: props.layoutText,
+      layoutFirstText: props.layoutFirstText,
+      layoutSecondText: props.layoutSecondText,
+      layoutImage: props.layoutImage,
     },
     this.handleClickHideLayout = this.handleClickHideLayout.bind(this);
     this.setState = this.setState.bind(this);
@@ -250,11 +145,20 @@ class InfoGroup extends React.Component {
         balance: this.props.balance
       })
     }
-    if (!(this.state.layoutText == this.props.layoutText)) {
+    if (!(this.state.layoutFirstText == this.props.layoutFirstText)) {
       this.setState({
-        layoutText: this.props.layoutText
+        layoutFirstText: this.props.layoutFirstText
       })
-      console.log("layouttext sended to state")
+    }
+    if (!(this.state.layoutSecondText == this.props.layoutSecondText)) {
+      this.setState({
+        layoutSecondText: this.props.layoutSecondText
+      })
+    }
+    if (!(this.state.layoutImage == this.props.layoutImage)) {
+      this.setState({
+        layoutImage: this.props.layoutImage
+      })
     }
     if (!(this.state.layout == this.props.layout)) {
       this.setState({
@@ -271,21 +175,14 @@ class InfoGroup extends React.Component {
 
 
   render() {
-    const infoGroupStyle = (`
-    
-    `)
-
     return (
       <>
-      <style>
-        {infoGroupStyle}
-      </style>
-      <div className='d-flex flex-shrink-1 end-0 m-2 flex-column content-beetwen info-group'>
-        <Balance balance={this.state.balance}/>
-        <Jackpot />
-        <Button title_first_line="SPIN" title_second_line="WHEEL" onClick={this.props.onClick}/>
-        <Layout text={this.state.layoutText} hideLayout={this.props.hideLayout} layout={this.state.layout}/>
-      </div>
+        <div className='d-flex m-2 flex-row justify-content-between info-group'>
+          <Balance balance={this.state.balance}/>
+          <Jackpot />
+          <Button title_first_line="SPIN" title_second_line="WHEEL" onClick={this.props.onClick}/>
+          <Layout layoutImage={this.state.layoutImage} firstText={this.state.layoutFirstText} secondText={this.state.layoutSecondText}  hideLayout={this.props.hideLayout} layout={this.state.layout}/>
+        </div>
       </>
     )
   }
@@ -306,7 +203,6 @@ class WheelContainer extends React.Component {
     let obj;
     const res = await fetch('http://127.0.0.1:8000/API/Prizes')
     obj = await res.json();
-    console.log(obj)
     let data = []
 
     for (let i in obj) {
@@ -345,46 +241,11 @@ class WheelContainer extends React.Component {
   }
 
   render() {
-    const myStyle = (`
-    .my-container {
-      position: relative;
-      display: inline-flex;
-      aspect-ratio: 1 / 1;
-      text-align: center;
-      max-height: 50vh;
-      max-width: 50vh;
-      background: linear-gradient(180deg, #3496DF 11.29%, #016CB9 94.98%);
-      box-shadow: inset 1px 5px 4px #1B379F;
-      border-radius: 15px;
-      justify-content: center;
-      align-items: center;
-      }
-    .bhdLno {
-      z-index: 0 !important;
-      width: 92% !important;
-      height: 92% !important;
-      top: 0.4vh;
-      transform: rotate(-45deg);
-    }
-    img[alt~="roulette-static"] {
-      position: relative;
-      z-index: 1;
-      width: 7%;
-      right: -30%;
-      top: 13%;
-      transform: rotate(45deg);
-      content: url("../static/frontend/images/wheel-pointer 1.svg"); }
-    `)
-    
     return (
       <>
-        <style>
-          {myStyle}
-        </style>
         <div className='my-container flex-grow-1 m-2'>
           <Wheel
             radiusLineWidth = {0}
-            pointerProps = {{src: "../static/frontend/images/wheel-pointer 1.svg"}}
             textDistance = {80}
             outerBorderColor = "#bfbebd"
             outerBorderWidth = {20}
@@ -411,7 +272,8 @@ class GameContainer extends React.Component {
       prizeCode: null,
       balance: this.props.balance,
       mustSpin: false,
-      layoutText: null,
+      layoutFirstText: null,
+      layoutSecondText: null,
     };
     this.handleClick = this.handleClick.bind(this)
     this.hideLayout = this.hideLayout.bind(this)
@@ -434,16 +296,13 @@ class GameContainer extends React.Component {
     return decodeURIComponent(xsrfCookies[0].split('=')[1]);
   }
 
+
   componentDidUpdate() {
-    if (!(this.state.balance == this.props.balance)){
+    if (!(this.state.balance == this.props.balance) && (this.state.balance == 0) && this.state.responseBalance == null){
       this.setState({
         balance: this.props.balance,
       })
     }
-  }
-
-  shouldComponentUpdate() {
-    return !(this.state.balance == this.state.responseBalance)
   }
 
   makeSpinRequest() {
@@ -460,7 +319,6 @@ class GameContainer extends React.Component {
     fetch('/API/Spinner', requestOptions)
       .then(response => response.json())
       .then(response => {
-        console.log(response)
         this.setState({
           prizeIndex: response["prize_index"],
           prize: response["result"],
@@ -471,25 +329,30 @@ class GameContainer extends React.Component {
   }
 
   startWheelSpin() {
-    this.setState({mustSpin: true,})
+    if (this.state.prize >= 0) {
+      this.setState({mustSpin: true,})
+    }
   }
 
   setLayoutText(prize) {
-    console.log(prize)
-    console.log(this.state.prize)
     if (prize == 0) {
       this.setState({
-        layoutText: "YOU WON NOTHING, TRY AGAIN!",
+        layoutFirstText: "YOU WON NOTHING, TRY AGAIN!",
+        layoutImage: false,
       })
     }
     else if (prize == -1) {
       this.setState({
-        layoutText: "YOU HAVE NOPT ENOUGTH MONEY!",
+        layoutFirstText: "YOU HAVE NOT ENOUGTH MONEY!",
+        layout: true,
+        layoutImage: false,
       }) 
     }
     else if (prize > 0) {
       this.setState({
-        layoutText: `YOU WON ${prize}`,
+        layoutFirstText: `YOU WIN!`,
+        layoutSecondText: `${prize}`,
+        layoutImage: true,
       }) 
     }
   }
@@ -503,7 +366,9 @@ class GameContainer extends React.Component {
       mustSpin: false,
       layout: true,
       balance: this.state.responseBalance,
+      responseBalance: null,
     })
+    this.props.updateWinners()
   }
 
   hideLayout() {
@@ -513,29 +378,22 @@ class GameContainer extends React.Component {
   }
   
   render() {
-    const myStyle = (`
-      .main-title {
-        top: 5vh;
-        font-family: 'Luckiest Guy';
-        font-weight: 400;
-        line-height: 4vh;
-        text-align: center;
-        letter-spacing: 1px;
-        color: #FFFFFF;
-        text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      }
-    `)
-    console.log(this.state.mustSpin)
     return (
       <>
-      <style>{myStyle}</style>
-      <span className='main-title my-2 fs-1'>
-        WHEEL OF FORTUNE
-      </span>
-      <div className='d-flex flex-row h-25 justify-content-between'>
-        <WheelContainer startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
-        <InfoGroup hideLayout={this.hideLayout} layoutText={this.state.layoutText} layout={this.state.layout} onClick={this.handleClick} balance={this.state.balance}/>
-      </div>
+        <span className='main-title my-2 fs-1'>
+          WHEEL OF FORTUNE
+        </span>
+        <div className='d-flex flex-column h-25 justify-content-between'>
+          <WheelContainer startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
+          <InfoGroup 
+            layoutImage={this.state.layoutImage}
+            hideLayout={this.hideLayout} 
+            layoutFirstText={this.state.layoutFirstText} 
+            layoutSecondText={this.state.layoutSecondText} 
+            layout={this.state.layout} 
+            onClick={this.handleClick} 
+            balance={this.state.balance}/>
+        </div>
       </>
     )
   }
@@ -551,6 +409,7 @@ class App extends React.Component {
       balance: 0,
       username: "",
     };
+    this.getLastWinners = this.getLastWinners.bind(this)
   }
 
   async getUserBalance() {
@@ -571,7 +430,7 @@ class App extends React.Component {
     this.setState({
       winnersList: obj,
     })
-    console.log(obj)
+    console.log("Last winner request")
   }
 
   componentDidMount() {
@@ -581,21 +440,12 @@ class App extends React.Component {
 
 
   render() {
-    const myStyle = (`
-    .app-container {
-      background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);
-    }
-    `)
-
     return (
       <>
-      <style>
-        {myStyle}
-      </style>
-      <div className='p-1 mw-50 app-container container-sm d-flex flex-column justify-content-center text-center h-100'>
-        <GameContainer prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
-        <WinnerList winnersList={this.state.winnersList} />        
-      </div>
+        <div className='p-1 mw-50 app-container container-sm d-flex flex-column justify-content-center text-center h-100'>
+          <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
+          <WinnerList winnersList={this.state.winnersList} />        
+        </div>
       </>
     )
   }

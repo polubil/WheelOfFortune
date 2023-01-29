@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+{% load static %}
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Django REST with React</title>
+  <title>Wheel of Fortune</title>
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Luckiest+Guy" />
+  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/style.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
 </head>
 <body>
-    Hello World
 <div id="winners-list">
     <!-- React will load here -->
 </div>
 </body>
-{% load static %}
 <script src="{% static "frontend/main.js" %}"></script>
 </html>

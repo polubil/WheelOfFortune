@@ -91,8 +91,9 @@ class Spinner(APIView):
             balance_manager.spend_balance(self.spin_cost)
             prize = self.spin_wheel()
             if prize > 0:
-                balance_manager.add_balance(Prizes.get_prizes()[prize])
-                winner = Winners.objects.create(winner=user, winning_amount=prize)
+                amount = Prizes.get_prizes()[prize]
+                balance_manager.add_balance(amount)
+                winner = Winners.objects.create(winner=user, winning_amount=amount)
                 winner.save()
                 return prize
             else:
@@ -119,43 +120,3 @@ class LastWinners(APIView):
         winners = Winners.last_20_winners()
         winners_serializer = WinnersSerializers(winners, many=True)
         return Response(winners_serializer.data)
-
-
-
-class IndexDRF(APIView):
-
-    spin_cost = 100
-
-    def get(self, request, format=None):
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        user = UserBalance.objects.get(user=request.user).get_user_info()[0]
-        winners = Winners.last_20_winners()
-        winners_serializer = WinnersSerializers(winners, many=True)
-        return Response((user.username, user_balance, winners_serializer.data))
-
-    def post(self, request):
-        balance_manager = UserBalance.objects.get(user=request.user)
-        user = UserBalance.objects.get(user=request.user).get_user_info()[0]
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        result = self.make_spin(user_balance, balance_manager, user)
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        return Response((result, user.username, user_balance), status=status.HTTP_201_CREATED)
-
-    def spin_wheel(self):
-        jackpot = 10000
-        prizes = [100, 400, 200, 0, 1000, 0, 0, 100]
-        return choice(prizes)
-
-    def make_spin(self, user_balance, balance_manager, user):
-        if user_balance > self.spin_cost:
-            balance_manager.spend_balance(self.spin_cost)
-            prize = self.spin_wheel()
-            if prize > 0:
-                balance_manager.add_balance(prize)
-                winner = Winners.objects.create(winner=user, winning_amount=prize)
-                winner.save()
-                return f"YOU WON\n{prize}"
-            else:
-                return f"YOU WON NOTHING.\nTRY AGAIN!"
-        else:
-            return f"Have not enougth money. On your balance {user_balance}, spin's cost {self.spin_cost}"
