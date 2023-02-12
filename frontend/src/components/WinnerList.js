@@ -1,22 +1,90 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'bootstrap';
 import { Wheel } from 'react-custom-roulette'
 import AuthForm from './AuthForm';
 
+/* function MiscContainer(props) {
+  const ref = useRef(null);
+
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  const handleChangeSize = function() {
+    setWidth(ref.current.offsetWidth);
+    setHeight(ref.current);
+  }
+
+  useEffect(() => {
+    window.addEventListener("resize", handleChangeSize);
+    window.addEventListener("load", handleChangeSize);
+  }, []);
+
+  return (
+
+    <div className='d-flex flex-fill flex-grow-1 align-items-stretch' ref={ref}>
+      <p>
+        {width}
+      </p>
+      <p>
+        {height}
+      </p>
+      {height < 100 ? 
+
+      <span>less than 100</span>:<span>more than 100</span>
+      
+      }
+
+    </div>
+  );
+} */
 function WinnerListElement(props) {
+  const ref = useRef([]);
+
+  const [size, setSize] = useState(0);
+
+  const handleChangeSize = function() {
+    const gettedSize = [ref.current.offsetWidth, ref.current.offsetHeight]
+    setSize(gettedSize);
+    props.onElementSizeChanging(gettedSize);
+  }
+
+  useEffect(() => {
+    window.addEventListener("resize", handleChangeSize);
+    window.addEventListener("load", handleChangeSize);
+  }, []);
+
   return (
     <>
-    <div className="list-element align-items-center align-content-center d-flex justify-content-between px-2">
-      <span className='winner-list-text-elem'>
-        <svg height="50" width="50">
-          <circle cx="25" cy="25" r="20" stroke="black" strokeWidth="3" fill="grey" />
-          Sorry, your browser does not support inline SVG.  
-        </svg> 
-      </span>
-      <span className='winner-list-text-elem'>{props.username}</span>
-      <span className='winner-list-text-elem'>{props.winning_amount}<img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="50px" height="30px"></img></span>
-      <span className='winner-list-text-elem'>{Math.ceil((Date.now()-Date.parse(props.win_date))/1000)} с.</span>
+    <div ref={ref} className="list-element align-items-center p-2 align-content-center d-flex justify-content-between px-2 m-2">
+      <div>
+        <span className='winner-list-text-elem'>
+          <svg height="50" width="50">
+            <circle cx="25" cy="25" r="20" stroke="black" strokeWidth="3" fill="grey" />
+            Sorry, your browser does not support inline SVG.  
+          </svg> 
+        </span>        
+      </div>
+      <div style={{width: 35 + "%"}}>
+        <span className='winner-list-text-elem'>{props.username}</span>
+      </div>
+      <div style={{width: 35 + "%"}}>
+        <span className='winner-list-text-elem'>{props.winning_amount} <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="40px" height="25px"></img></span>
+      </div>
+      <div style={{width: 20 + "%"}}>
+        {0 <= Math.ceil((Date.now()-Date.parse(props.win_date))/1000) & Math.ceil((Date.now()-Date.parse(props.win_date))/1000) < 60 ?
+          <span className='winner-list-text-elem'>{Math.ceil((Date.now()-Date.parse(props.win_date))/1000)} s.</span> : ""
+        }
+        {60 <= Math.ceil((Date.now()-Date.parse(props.win_date))/1000) & Math.ceil((Date.now()-Date.parse(props.win_date))/1000) < 3600 ?
+          <span className='winner-list-text-elem'>{Math.ceil(((Date.now()-Date.parse(props.win_date))/1000)/60)} m.</span> : ""
+        }
+        {3600 <= Math.ceil((Date.now()-Date.parse(props.win_date))/1000) & Math.ceil((Date.now()-Date.parse(props.win_date))/1000) < 86400 ?
+          <span className='winner-list-text-elem'>{Math.ceil((((Date.now()-Date.parse(props.win_date))/1000)/60)/60)} h.</span> : ""
+        }
+        {86400 <= Math.ceil((Date.now()-Date.parse(props.win_date))/1000) & Math.ceil((Date.now()-Date.parse(props.win_date))/1000) < 2419200 ?
+          <span className='winner-list-text-elem'>{Math.ceil((((Date.now()-Date.parse(props.win_date))/1000)/60)/60)} d.</span> : ""
+        }
+      </div>
     </div>
     </>
   )
@@ -28,30 +96,73 @@ class WinnerList extends Component {
     this.state = {
       data: [],
       loaded: false,
-      placeholder: "Loading"
+      placeholder: "Loading",
+      elementsCount: 5,
+      containerSize: [],
+      listSize: [],
+      elemSize: [],
     };
+    this.containerRef = React.createRef();
+    this.listRef = React.createRef();
+    this.elemRef = React.createRef();
+    this.componentDidUpdate = this.componentDidUpdate.bind(this)
+    this.handleChangeSize = this.handleChangeSize.bind(this)
+    this.removeFromList = this.removeFromList.bind(this)
+    this.addToList = this.addToList.bind(this)
+  }
+
+  handleChangeSize() {
+    this.setState({
+      containerSize: [this.containerRef.current.offsetWidth, this.containerRef.current.offsetHeight],
+      listSize: [this.listRef.current.offsetWidth, this.listRef.current.offsetHeight]
+    });
+    console.log("resize")
+  }
+
+  componentDidMount() {
+    this.handleChangeSize()
   }
 
   componentDidUpdate() {
-    if (!(this.state.data == this.props.winnersList)) {
+    console.log(!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length))
+    console.log(this.state.data.values(),  this.props.winnersList.slice(0, this.state.elementsCount).values())
+    if (!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length)) {
       this.setState({
-        data: this.props.winnersList,
+        data: this.props.winnersList.slice(0, this.state.elementsCount),
       })
     }
-
+    window.addEventListener("resize", this.handleChangeSize);  
   }
 
+  addToList() {
+    this.setState({
+      elementsCount: this.state.elementsCount + 1,
+    })
+  }
+  removeFromList() {
+    this.setState({
+      elementsCount: this.state.elementsCount - 1,
+    })
+  }
 
   render() {
     return (
       <>
-      <div className="winners-container m-2 p-2">
+      <div ref={this.containerRef} className="winners-container m-2 p-2" style={{minWidth: 32 + "vw"}}>
         <span className='winners-title my-3'>WINNERS</span>
-        {this.state.data.map(winner => {
-          return (
-            <WinnerListElement key={winner.id} username={winner.winner} winning_amount={winner.winning_amount} win_date={winner.win_date}/>
-          );
-        })}
+        <div ref={this.listRef}>
+          {this.state.data.slice(0, this.state.elementsCount).map(winner => {
+            return (
+              <WinnerListElement onElementSizeChanging={(size) => this.setState({elemSize: size})} key={winner.id} username={winner.winner} winning_amount={winner.winning_amount} win_date={winner.win_date}/>
+            );
+          })}
+          {/* <MiscContainer/> */}
+          <span>container height {this.state.containerSize[1]}</span>
+          <span>list height {this.state.listSize[1]}</span>
+          <span>elem height {this.state.elemSize[1]}</span>
+          <button onClick={this.addToList}></button>
+          <button onClick={this.removeFromList}></button>
+        </div>
       </div>
       </>
     );
@@ -99,6 +210,10 @@ function Layout(props) {
     .myLayout {
       display: ${props.layout ? "flex" : "none" };
     }
+
+    html {
+      overflow-y: ${props.layout ? "hidden" : "overlay" };
+    }
   `)
 
   return (
@@ -107,7 +222,7 @@ function Layout(props) {
         <div className='align-items-center flex-column justify-content-center text-center myLayout'>
           <span className='winner-text my-2'>{props.firstText}</span>
             {props.layoutImage == true && <span className='winner-text my-2'>{props.secondText}
-              <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="100px" height="65px"></img>
+              <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="80px" height="48px"></img>
             </span>}
           <Button title_first_line="GREAT" onClick={props.hideLayout}/>
         </div>
@@ -401,10 +516,7 @@ class GameContainer extends React.Component {
   render() {
     return (
       <>
-        <span className='main-title my-2 fs-1'>
-          WHEEL OF FORTUNE!
-        </span>
-        <div className='d-flex flex-column h-25 justify-content-between'>
+        <div className='d-flex flex-column justify-content-between'>
           <WheelContainer startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
           <InfoGroup 
             buttonDisabled={this.state.buttonDisabled}
@@ -421,6 +533,28 @@ class GameContainer extends React.Component {
   }
 }
 
+function WindowSize() {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  });
+
+  return (
+    <>
+      {windowWidth}
+    </>
+  );
+}
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -431,9 +565,16 @@ class App extends React.Component {
       balance: 0,
       username: "",
       userLoggedIn: null,
-      
+      windowWidth: window.innerWidth,
     };
     this.getLastWinners = this.getLastWinners.bind(this)
+    this.handleWindowResize = this.handleWindowResize.bind(this)
+  }
+
+  handleWindowResize() {
+    this.setState({
+      windowWidth: window.innerWidth,
+    }) 
   }
 
   async getUserBalance() {
@@ -464,7 +605,7 @@ class App extends React.Component {
     this.setState({
       winnersList: obj,
     })
-    console.log("Last winner request")
+    console.log(this.state.winnersList)
   }
 
   componentDidMount() {
@@ -473,14 +614,20 @@ class App extends React.Component {
     this.getLastWinners()      
   }; 
 
-
   render() {
+    window.addEventListener('resize', this.handleWindowResize);
+    const classes = `p-1 container-m d-flex flex-${this.state.windowWidth < 1000 ? "column" : "row"} justify-content-center`
     if (this.state.userLoggedIn) {
       return (
         <>
-          <div className='p-1 mw-50 app-container container-sm d-flex flex-column justify-content-center text-center h-100'>
-            <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
-            <WinnerList winnersList={this.state.winnersList} />        
+          <div class="p-1 app-container d-flex flex-column justify-content-center text-center">
+            <span className='main-title my-2 fs-1'>
+              WHEEL OF FORTUNE!
+            </span>
+            <div className={classes}>
+              <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
+              <WinnerList winnersList={this.state.winnersList} />   
+            </div>
           </div>
         </>
       )

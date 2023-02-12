@@ -3,15 +3,12 @@ html {
     min-height:100%;/* make sure it is at least as tall as the viewport */
     position:relative;
     overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 body {
-  height:100%;
-  display: flex;
-  align-content: center;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  justify-content: center;
   background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);
   overflow-x: hidden;
 }
@@ -22,6 +19,7 @@ body {
     font-size: 130%;
     color: #FFFFFF;
     text-shadow: -1px -1px 3px rgb(0 0 0 / 34%);
+    white-space: nowrap;
 }
 
 .list-element {
@@ -36,6 +34,8 @@ body {
     background: linear-gradient(180deg, #3598DF 0%, #006BB8 100%);
     box-shadow: inset 1px 5px 4px #1B379F;
     border-radius: 15px;
+    display: inline-flex;
+    flex-direction: column;
 }
 
 .winners-title {
@@ -65,10 +65,8 @@ body {
 
 .myLayout {
     overflow:hidden;
-    position: absolute;
+    position: fixed;
     background-color: rgba(0, 0, 0, 0.8);
-    min-width: 100%;
-    min-height: 100%;
     top:0;
     bottom:0;
     left:0;
@@ -119,6 +117,7 @@ body {
   }
 
 .my-container {
+    min-width: 40vw;
     position: relative;
     display: inline-flex;
     aspect-ratio: 1 / 1;
@@ -162,5 +161,9 @@ img[alt~="roulette-static"] {
 }
 
 .app-container {
-    background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);
+    overflow: hidden;
+}
+
+.winner-list {
+    overflow-x: hidden;
 }
