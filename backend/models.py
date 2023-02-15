@@ -10,7 +10,7 @@ class Winners(models.Model):
     win_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время выигрыша")
 
     def last_20_winners():
-        return Winners.objects.filter().order_by("-win_date")[:6]
+        return Winners.objects.filter().order_by("-win_date")[:20]
 
 class UserBalance(models.Model):
 

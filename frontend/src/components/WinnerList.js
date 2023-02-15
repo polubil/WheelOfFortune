@@ -39,24 +39,9 @@ import AuthForm from './AuthForm';
   );
 } */
 function WinnerListElement(props) {
-  const ref = useRef([]);
-
-  const [size, setSize] = useState(0);
-
-  const handleChangeSize = function() {
-    const gettedSize = [ref.current.offsetWidth, ref.current.offsetHeight]
-    setSize(gettedSize);
-    props.onElementSizeChanging(gettedSize);
-  }
-
-  useEffect(() => {
-    window.addEventListener("resize", handleChangeSize);
-    window.addEventListener("load", handleChangeSize);
-  }, []);
-
   return (
     <>
-    <div ref={ref} className="list-element align-items-center p-2 align-content-center d-flex justify-content-between px-2 m-2">
+    <div className="list-element align-items-center p-2 align-content-center d-flex justify-content-between align-self-stretch px-2 m-2">
       <div>
         <span className='winner-list-text-elem'>
           <svg height="50" width="50">
@@ -97,26 +82,41 @@ class WinnerList extends Component {
       data: [],
       loaded: false,
       placeholder: "Loading",
-      elementsCount: 5,
+      elementsCount: 0,
       containerSize: [],
       listSize: [],
-      elemSize: [],
+      emptySize: [],
+      titleSize: [],
     };
     this.containerRef = React.createRef();
     this.listRef = React.createRef();
-    this.elemRef = React.createRef();
+    this.titleRef = React.createRef();
     this.componentDidUpdate = this.componentDidUpdate.bind(this)
     this.handleChangeSize = this.handleChangeSize.bind(this)
     this.removeFromList = this.removeFromList.bind(this)
-    this.addToList = this.addToList.bind(this)
+    this.setListLen = this.setListLen.bind(this)
   }
 
   handleChangeSize() {
     this.setState({
       containerSize: [this.containerRef.current.offsetWidth, this.containerRef.current.offsetHeight],
-      listSize: [this.listRef.current.offsetWidth, this.listRef.current.offsetHeight]
+      listSize: [this.listRef.current.offsetWidth, this.listRef.current.offsetHeight],
+      titleSize: [this.titleRef.current.offsetWidth, this.titleRef.current.offsetHeight],
+      emptySize: [
+        this.containerRef.current.offsetWidth-(this.listRef.current.offsetWidth), 
+        this.containerRef.current.offsetHeight-(this.listRef.current.offsetHeight + this.titleRef.current.offsetHeight)
+      ]
     });
     console.log("resize")
+    if (
+    (this.state.emptySize[1] > 100 && this.state.elementsCount < Math.floor((this.state.emptySize[1]+this.state.listSize[1])/100)) ||
+    (this.state.emptySize[1] < 100 && this.state.elementsCount > Math.floor((this.state.emptySize[1]+this.state.listSize[1])/100))
+    ) {
+     console.log(this.state.emptySize[1])
+     this.setState({
+       elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90)
+     }) 
+    }
   }
 
   componentDidMount() {
@@ -124,19 +124,27 @@ class WinnerList extends Component {
   }
 
   componentDidUpdate() {
-    console.log(!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length))
-    console.log(this.state.data.values(),  this.props.winnersList.slice(0, this.state.elementsCount).values())
-    if (!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length)) {
+    if (!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length) ||
+      !(this.state.data[0] == this.props.winnersList[0])) {
       this.setState({
         data: this.props.winnersList.slice(0, this.state.elementsCount),
       })
     }
-    window.addEventListener("resize", this.handleChangeSize);  
+    window.addEventListener("resize", this.handleChangeSize);
+    if (!(this.listRef.current.offsetWidth + this.listRef.current.offsetHeight == this.state.listSize[0] + this.state.listSize[1])) {
+      this.handleChangeSize()
+    }
+    if (this.state.elementsCount == 0) {
+      console.log(this.state.emptySize[1])
+      this.setState({
+        elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90)
+      })
+    }
   }
 
-  addToList() {
+  setListLen(n) {
     this.setState({
-      elementsCount: this.state.elementsCount + 1,
+      elementsCount: n,
     })
   }
   removeFromList() {
@@ -149,19 +157,15 @@ class WinnerList extends Component {
     return (
       <>
       <div ref={this.containerRef} className="winners-container m-2 p-2" style={{minWidth: 32 + "vw"}}>
-        <span className='winners-title my-3'>WINNERS</span>
-        <div ref={this.listRef}>
+        <div className='py-3'>
+          <span ref={this.titleRef} className='winners-title'>WINNERS</span>
+        </div>
+        <div className='d-flex flex-column' ref={this.listRef}>
           {this.state.data.slice(0, this.state.elementsCount).map(winner => {
             return (
-              <WinnerListElement onElementSizeChanging={(size) => this.setState({elemSize: size})} key={winner.id} username={winner.winner} winning_amount={winner.winning_amount} win_date={winner.win_date}/>
+              <WinnerListElement key={winner.id} username={winner.winner} winning_amount={winner.winning_amount} win_date={winner.win_date}/>
             );
           })}
-          {/* <MiscContainer/> */}
-          <span>container height {this.state.containerSize[1]}</span>
-          <span>list height {this.state.listSize[1]}</span>
-          <span>elem height {this.state.elemSize[1]}</span>
-          <button onClick={this.addToList}></button>
-          <button onClick={this.removeFromList}></button>
         </div>
       </div>
       </>
@@ -383,7 +387,7 @@ class WheelContainer extends React.Component {
             fontFamily = "Luckiest Guy"
             fontSize = {40}
             perpendicularText = {true}
-            spinDuration = {0.02}
+            spinDuration = {1.0}
             onStopSpinning={this.handleStopSpinning}
             mustStartSpinning={this.state.mustSpin}
             prizeNumber={this.state.prizeIndex}
@@ -533,39 +537,22 @@ class GameContainer extends React.Component {
   }
 }
 
-function WindowSize() {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const handleWindowResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleWindowResize);
-
-    return () => {
-      window.removeEventListener('resize', handleWindowResize);
-    };
-  });
-
-  return (
-    <>
-      {windowWidth}
-    </>
-  );
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       winnersList: [],
-      loaded: false,
-      placeholder: "Loading",
+      isLoaded: false,
       balance: 0,
       username: "",
       userLoggedIn: null,
       windowWidth: window.innerWidth,
+      loadedData: {
+        balance: false,
+        username: false,
+        userLoggedIn: false,
+        winnersList: false,
+      }
     };
     this.getLastWinners = this.getLastWinners.bind(this)
     this.handleWindowResize = this.handleWindowResize.bind(this)
@@ -577,67 +564,107 @@ class App extends React.Component {
     }) 
   }
 
+  isLoaded() {
+    const array = new Array(0)
+    for (const [key, value] of Object.entries(this.state.loadedData)) {
+      array.push(value)
+    }
+    return array.every((value) => value == true)
+  }
+
+  componentDidUpdate() {
+    if (!(this.isLoaded() == this.state.isLoaded)) {
+      this.setState({isLoaded: this.isLoaded()})
+      this.componentDidMount()
+    }
+  }
+
   async getUserBalance() {
     let obj;
     const res = await fetch('/API/UserBalance?format=json')
     obj = await res.json();
+    let loadedDataCp = this.state.loadedData
+    loadedDataCp.username = true
+    loadedDataCp.balance = true
     this.setState({
       balance: obj['user_balance'],
       username: obj['username'],
+      loadedData: loadedDataCp,
     })
-    console.log(obj['user_balance'])
   }
 
   async isUserLoggedIn() {
     let obj;
     const res = await fetch("/API/LoginChecker")
     obj = await res.json();
+    let loadedDataCp = this.state.loadedData
+    loadedDataCp.userLoggedIn = obj
     this.setState({
       userLoggedIn: obj,
+      loadedData: loadedDataCp,
     })
-    console.log(this.state.userLoggedIn)
+    
+    if (obj) {
+      this.getUserBalance()
+      this.getLastWinners()  
+    }
   }
 
   async getLastWinners() {
     let obj;
     const res = await fetch('/API/Last20Winners?format=json')
     obj = await res.json();
+    let loadedDataCp = this.state.loadedData
+    loadedDataCp.winnersList = true
     this.setState({
       winnersList: obj,
+      loadedData: loadedDataCp
     })
-    console.log(this.state.winnersList)
   }
 
   componentDidMount() {
     this.isUserLoggedIn()
-    this.getUserBalance()
-    this.getLastWinners()      
+
+    window.addEventListener('resize', this.handleWindowResize);   
   }; 
 
   render() {
-    window.addEventListener('resize', this.handleWindowResize);
     const classes = `p-1 container-m d-flex flex-${this.state.windowWidth < 1000 ? "column" : "row"} justify-content-center`
+    
     if (this.state.userLoggedIn) {
-      return (
-        <>
-          <div class="p-1 app-container d-flex flex-column justify-content-center text-center">
-            <span className='main-title my-2 fs-1'>
-              WHEEL OF FORTUNE!
-            </span>
-            <div className={classes}>
-              <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
-              <WinnerList winnersList={this.state.winnersList} />   
+      if (this.state.isLoaded == true) {
+        return (
+          <>
+            <div className="p-1 app-container d-flex flex-column justify-content-center text-center">
+              <span className='main-title my-2 fs-1'>
+                WHEEL OF FORTUNE!
+              </span>
+              <div className={classes}>
+                <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
+                <WinnerList winnersList={this.state.winnersList} />   
+              </div>
             </div>
+          </>
+        ) 
+      }
+      else {
+        return (
+          <>
+          <div className="spinner-border m-5 loading-spinner text-light" role="status">
+            <span className="visually-hidden">Загрузка...</span>
           </div>
-        </>
-      )
-    } else {
+          </>
+        )
+      }
+    }
+    else {
       return (
         <AuthForm></AuthForm>
       )
     }
   }
 }
+
 
 export default App;
 

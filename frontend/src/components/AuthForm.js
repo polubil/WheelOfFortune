@@ -119,9 +119,9 @@ function AuthForm() {
           <MDBTabsPane show={justifyActive === 'tab1'}>
 
             <MDBInput wrapperClass='mb-4' label='Username' id='form0Field1' onChange={(e) => setLogin(e.target.value)} value={login} type='email'/>
-            <MDBInput wrapperClass='mb-4' label='Password' id='form1Field2' onChange={(e) => setPassword(e.target.value)} value={password} type='password'/>
+            <MDBInput wrapperClass='mb-4' label='Password' id='form0Field2' onChange={(e) => setPassword(e.target.value)} value={password} type='password'/>
             {isErrorLogin && <div className='p-3 mb-2 bg-danger text-white'>Аккаунт не существует или данные введены неверно.</div>}
-            <MDBBtn onClick={handleClick} className="mb-4">Sign in</MDBBtn>
+            <MDBBtn onClick={handleClick}>Sign in</MDBBtn>
 
           </MDBTabsPane>
 
@@ -131,7 +131,7 @@ function AuthForm() {
             <MDBInput wrapperClass='mb-4' label='Password' id='form1Field2' onChange={(e) => setPassword1(e.target.value)} value={password1} type='password'/>
             <MDBInput wrapperClass='mb-4' label='Repeat password' id='form1Field3' onChange={(e) => setPassword2(e.target.value)} value={password2} type='password'/>
             {isErrorReg && <div className='p-3 mb-2 bg-danger text-white'>Ошибка регистрации. Проверьте правильность заполнения всех полей и попробуйте ещё раз.</div>}
-            <MDBBtn onClick={handleSignUp} className="mb-4">Sign up</MDBBtn>
+            <MDBBtn onClick={handleSignUp}>Sign up</MDBBtn>
 
           </MDBTabsPane>
 

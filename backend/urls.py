@@ -9,7 +9,8 @@ urlpatterns = [
     path('API/Prizes', Prizes.as_view(), name="DRF"),
     path('API/Last20Winners', LastWinners.as_view(), name="DRF"),
     path('API/LoginChecker', LoginChecker.as_view(), name="DRF"),
-    path('API/Login', Login.as_view(), name="DRF"),
+    # path('API/Login', Login.as_view(), name="DRF"),
     path('API/SignUp', Register.as_view(), name="DRF"),
-    path('', index.as_view(), name="index")
+    path('', index.as_view(), name="index"),
+    path('', include('social_django.urls', namespace='social')),
 ]
