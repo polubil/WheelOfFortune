@@ -1,15 +1,124 @@
-from typing import Any, Dict
-from django.shortcuts import render
+from typing import Any, Dict, Optional
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
-from .models import Winners, UserBalance
+from backend import models
 from random import choice, randint
 from rest_framework.views import APIView
 from .serializers import WinnersSerializers
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate, login
-import json
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.contrib.auth import authenticate, login, logout
+import json, requests
 from django.contrib.auth.models import User
+import datetime as dt
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth.decorators import login_required
+
+
+class CustomBackend(BaseBackend):
+
+    def authenticate(request, username=None, token=None, expires_in=None, **kwargs: Any):
+        if models.VKToken.objects.filter(id=username).exists():
+            expires = models.VKToken.objects.get(id=username).expires
+            if expires < dt.datetime.now(expires.tzinfo):
+                VKToken = models.VKToken.objects.get(id=username)
+                VKToken.token = token
+                VKToken.expires = dt.datetime.now()+dt.timedelta(seconds=expires_in)
+                VKToken.save()
+        else:
+            VKToken = models.VKToken.objects.create(
+                id = username,
+                token = token,
+                expires = dt.datetime.now()+dt.timedelta(seconds=expires_in),
+            )
+            VKToken.save()
+        user = models.User.objects.filter(username=username)
+        if user.exists():
+            return user[0]
+        else:
+            return None
+
+    def get_user(self, user_id):
+        if User.objects.filter(id=user_id).exists():
+            user = User.objects.get(id=user_id)
+            if user:
+                return user
+            else: 
+                return None
+        else: 
+            return None
+        
+
+class VKLogin(APIView):
+    app_settings = models.Settings.objects
+    client_id=app_settings.get(key="client_id").value           # ID Приложения ВК
+    redirect_uri=app_settings.get(key="redirect_uri").value     #адрес, на который будет передан code
+    scope=app_settings.get(key="scope").value                   # Запрашиваемые данные для доступа
+    response_type="code"                                        # Code/access_token. Code, in our case
+    client_secret=app_settings.get(key="client_secret").value   # Secret key приложения ВК. 
+    def authorize(self, request, user_id, VKToken, expires_in, VK_user):
+        network = models.SocialNetwork.objects.get(title="VK")
+        user = CustomBackend.authenticate(request=request, 
+                                            username=user_id,
+                                            token=VKToken, 
+                                            expires_in=expires_in)
+        if not request.user.is_authenticated:
+            if user is not None:
+                login(request, user, backend='backend.views.CustomBackend')
+                return {"code": 1, "status": "signed in", "user": request.user.username}
+            else:
+                user = User.objects.create(
+                    id = user_id,
+                    username = user_id,
+                    first_name = VK_user.get("first_name"),
+                    last_name = VK_user.get("last_name"),
+                )
+                user.save()
+                account = models.SocialAccount.objects.create(
+                    network = network,
+                    user = user,
+                )
+                account.save()
+                user = CustomBackend.authenticate(request, username=user_id)
+                login(request, user, backend='backend.views.CustomBackend')
+                return {"code": 1, "status": "signed up", "user": request.user.username}
+        else:
+            return {"code": 1, "status": "already signed in", "username": request.user.username}
+
+    def get(self, request, *args, **kwargs):
+            if request.GET.get("code"):
+                self.code=request.GET.get("code")
+                req_info = {
+                    "client_id": self.client_id,
+                    "redirect_uri":self.redirect_uri,
+                    "code": self.code,
+                    "client_secret": self.client_secret,
+                }
+                access_token = requests.get(f"https://oauth.vk.com/access_token", params=req_info).json()
+                if access_token.get("access_token"):
+                    token = access_token["access_token"]
+                    expires_in = access_token["expires_in"]
+                    user_id = access_token["user_id"]
+                    params = {
+                        "access_token": token,
+                        "user_ids": user_id,
+                        "fields": "first_name, last_name, photo_max",
+                        "v": "5.131",
+                    }
+                    VK_user = requests.post("https://api.vk.com/method/users.get", params=params).json()["response"][0]
+
+                    print(VK_user)
+                    auth = self.authorize(request, user_id, token, expires_in, VK_user)
+                    return Response(auth)
+                else:
+                    return Response({"code": 0, "details": access_token})
+            else:
+                return Response({"code": 0, "details": request.GET})
+    
+
+def responses(request):
+    return JsonResponse(request.GET)
 
 class index(TemplateView):
     template_name = "index.html"
@@ -17,8 +126,9 @@ class index(TemplateView):
 
     def get_context_data(self, request, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["winners"] = Winners.last_20_winners()
-        context["balance"] = UserBalance.objects.get(user=request.user).get_user_info()[1]
+        context["winners"] = models.Winners.last_20_winners()
+        if request.user.is_authenticated:
+            context["balance"] = models.UserBalance.objects.get(user=request.user).get_user_info()[1]
         return context
 
     def get(self, request):
@@ -27,9 +137,9 @@ class index(TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        balance_manager = UserBalance.objects.get(user=request.user)
-        user = UserBalance.objects.get(user=request.user).get_user_info()[0]
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
+        balance_manager = models.UserBalance.objects.get(user=request.user)
+        user = models.UserBalance.objects.get(user=request.user).get_user_info()[0]
+        user_balance = models.UserBalance.objects.get(user=request.user).get_user_info()[1]
         action = request.POST.get("action")
         if action == "make_spin":
             result = self.make_spin(user_balance, balance_manager, user)
@@ -49,7 +159,7 @@ class index(TemplateView):
             prize = self.spin_wheel()
             if prize > 0:
                 balance_manager.add_balance(prize)
-                winner = Winners.objects.create(winner=user, winning_amount=prize)
+                winner = models.Winners.objects.create(winner=user, winning_amount=prize)
                 winner.save()
                 return f"You won {prize}"
             else:
@@ -60,11 +170,14 @@ class index(TemplateView):
 class UserBalanceAPI(APIView):
 
     def get(self, request, format=None):
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        user = UserBalance.objects.get(user=request.user).get_user_info()[0]
-        winners = Winners.last_20_winners()
-        winners_serializer = WinnersSerializers(winners, many=True)
-        return Response({"username": user.username, "user_balance": user_balance})
+        if request.user.is_authenticated:
+            user_balance = models.UserBalance.objects.get(user=request.user).get_user_info()[1]
+            user = models.UserBalance.objects.get(user=request.user).get_user_info()[0]
+            winners = models.Winners.last_20_winners()
+            winners_serializer = WinnersSerializers(winners, many=True)
+            return Response({"username": user.username, "user_balance": user_balance}, 200)
+        else: 
+            return Response({"error": "user is not logging in."}, 401)
 
 
 class Spinner(APIView):
@@ -72,15 +185,18 @@ class Spinner(APIView):
     spin_cost = 100
 
     def post(self, request):
-        balance_manager = UserBalance.objects.get(user=request.user)
-        user = UserBalance.objects.get(user=request.user).get_user_info()[0]
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        prize_index = self.make_spin(user_balance, balance_manager, user)
-        if prize_index != -1:
-            result = Prizes.get_prizes()[prize_index]
-        else: result = -1
-        user_balance = UserBalance.objects.get(user=request.user).get_user_info()[1]
-        return Response({"prize_index": prize_index, "result": result, "username": user.username, "user_balance": user_balance}, status=status.HTTP_201_CREATED)
+        if request.user.is_authenticated:
+            balance_manager = models.UserBalance.objects.get(user=request.user)
+            user = models.UserBalance.objects.get(user=request.user).get_user_info()[0]
+            user_balance = models.UserBalance.objects.get(user=request.user).get_user_info()[1]
+            prize_index = self.make_spin(user_balance, balance_manager, user)
+            if prize_index != -1:
+                result = Prizes.get_prizes()[prize_index]
+            else: result = -1
+            user_balance = models.UserBalance.objects.get(user=request.user).get_user_info()[1]
+            return Response({"prize_index": prize_index, "result": result, "username": user.username, "user_balance": user_balance}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"error": "user is not logging in."}, 401)
 
 
     def spin_wheel(self):
@@ -96,7 +212,7 @@ class Spinner(APIView):
             if prize > 0:
                 amount = Prizes.get_prizes()[prize]
                 balance_manager.add_balance(amount)
-                winner = Winners.objects.create(winner=user, winning_amount=amount)
+                winner = models.Winners.objects.create(winner=user, winning_amount=amount)
                 winner.save()
                 return prize
             else:
@@ -110,7 +226,10 @@ class Prizes(APIView):
 
     @classmethod
     def get(cls, request):
-        return Response(cls.PRIZES, status=status.HTTP_201_CREATED)
+        if request.user.is_authenticated:
+            return Response(cls.PRIZES, 200)
+        else:
+            return Response({"error": "user is not logging in."}, 401)
 
     @classmethod
     def get_prizes(cls):
@@ -120,9 +239,12 @@ class Prizes(APIView):
 class LastWinners(APIView):
     
     def get(self, request):
-        winners = Winners.last_20_winners()
-        winners_serializer = WinnersSerializers(winners, many=True)
-        return Response(winners_serializer.data)
+        if request.user.is_authenticated:
+            winners = models.Winners.last_20_winners()
+            winners_serializer = WinnersSerializers(winners, many=True)
+            return Response(winners_serializer.data)
+        else:
+            return Response({"error": "user is not logging in."}, 401)
 
 class LoginChecker(APIView):
 
@@ -148,6 +270,8 @@ class Register(APIView):
     def post(self, request):
         data = json.loads(request.body.decode("utf-8"))
         username = data.get("username")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
         password1 = data.get("password1")
         password2 = data.get("password2")
         messages = []
@@ -158,7 +282,12 @@ class Register(APIView):
         if password1 == password2 and len(password1) < 4:
             messages.append("Password length must be at least 4 characters.")
         if len(messages) == 0:
-            user = User.objects.create_user(username = username, password = password1)
+            user = User.objects.create_user(
+                username = username, 
+                password = password1,
+                first_name = first_name,
+                last_name = last_name,
+                )
             user.save()
             user = authenticate(request, username=username, password=password1)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')

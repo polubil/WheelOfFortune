@@ -4,40 +4,6 @@ import 'bootstrap';
 import { Wheel } from 'react-custom-roulette'
 import AuthForm from './AuthForm';
 
-/* function MiscContainer(props) {
-  const ref = useRef(null);
-
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-
-  const handleChangeSize = function() {
-    setWidth(ref.current.offsetWidth);
-    setHeight(ref.current);
-  }
-
-  useEffect(() => {
-    window.addEventListener("resize", handleChangeSize);
-    window.addEventListener("load", handleChangeSize);
-  }, []);
-
-  return (
-
-    <div className='d-flex flex-fill flex-grow-1 align-items-stretch' ref={ref}>
-      <p>
-        {width}
-      </p>
-      <p>
-        {height}
-      </p>
-      {height < 100 ? 
-
-      <span>less than 100</span>:<span>more than 100</span>
-      
-      }
-
-    </div>
-  );
-} */
 function WinnerListElement(props) {
   return (
     <>
@@ -51,7 +17,7 @@ function WinnerListElement(props) {
         </span>        
       </div>
       <div style={{width: 35 + "%"}}>
-        <span className='winner-list-text-elem'>{props.username}</span>
+        <span className='winner-list-text-elem text-wrap'>{props.username}</span>
       </div>
       <div style={{width: 35 + "%"}}>
         <span className='winner-list-text-elem'>{props.winning_amount} <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="40px" height="25px"></img></span>
@@ -114,7 +80,7 @@ class WinnerList extends Component {
     ) {
      console.log(this.state.emptySize[1])
      this.setState({
-       elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90)
+       elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/110) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/110)
      }) 
     }
   }

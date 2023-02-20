@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   MDBContainer,
   MDBTabs,
@@ -9,9 +9,11 @@ import {
   MDBBtn,
   MDBIcon,
   MDBInput,
-  MDBCheckbox
+  MDBCheckbox,
+  MDBTypography,
 }
 from 'mdb-react-ui-kit';
+import LoginViaVK from './LoginViaVK';
 
 function AuthForm() {
 
@@ -22,10 +24,67 @@ function AuthForm() {
   const [username, setUsername] = useState('');
   const [password1, setPassword1] = useState('');
   const [password2, setPassword2] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   
-  const [result, setResult] = useState("")
+  const [unLenValid, setUnLenValid] = useState();
+  const [unCharsValid, setUnCharsValid] = useState();
+  const [pwLenValid, setPwLenValid] = useState()
+  const [pwCharsValid, setPwCharsValid] = useState();
+  const [pw2Valid, setPw2Valid] = useState();
+  const [fnLenValid, setFnLenValid] = useState();
+  const [fnCharsValid, setFnCharsValid] = useState();
+  const [lnLenValid, setLnLenValid] = useState();
+  const [lnCharsValid, setLnCharsValid] = useState();
+
+  const [isDisabled, setDisabled] = useState(true);
+
   const [isErrorLogin, setErrorLogin] = useState(false)
   const [isErrorReg, setErrorReg] = useState(false)
+
+  useEffect(() => {
+    const usernameChars = new RegExp('^[a-zA-Z0-9_.-]*$')
+    setUnCharsValid(usernameChars.test(username))
+    if (username.length < 4 || username.length > 20 ) {
+        setUnLenValid(false) 
+      } else {
+      setUnLenValid(true)
+    }
+
+    const passwordChars = new RegExp('^[a-zA-Z0-9_.!"№;:?*@#$%&*^()-]*$')
+    setPwCharsValid(passwordChars.test(password1))
+    if ( password1.length < 8 ) {
+        setPwLenValid(false) 
+      } else {
+      setPwLenValid(true)
+    }
+
+    if ( password1 != password2 ) {
+      setPw2Valid(false)
+    } else {
+      setPw2Valid(true)
+    }
+
+    const namesChars = new RegExp('^[a-zA-Zа-яА-Я]*$')
+    setFnCharsValid(namesChars.test(firstName))
+    setLnCharsValid(namesChars.test(lastName))
+
+    if ( firstName.length < 2 || firstName.length > 20 ) {
+      setFnLenValid(false)
+    } else {
+      setFnLenValid(true)
+    }
+
+    if ( lastName.length < 2 || lastName.length > 20 ) {
+      setLnLenValid(false)
+    } else {
+      setLnLenValid(true)
+    }
+
+    let validStates = [unCharsValid, unLenValid, pwLenValid, pwCharsValid, pw2Valid, fnCharsValid, fnLenValid, lnCharsValid, lnLenValid]
+    let checker = arr => arr.every(v => v === true);
+    setDisabled(!checker(validStates))
+  })
 
 
   const getCookie = function (name) {
@@ -76,7 +135,13 @@ function AuthForm() {
         'Content-Type': 'application/json',
         'X-CSRFToken': csrftoken
       },
-      body: JSON.stringify({ username: username, password1: password1, password2: password2 })
+      body: JSON.stringify({ 
+        username: username, 
+        password1: password1, 
+        password2: password2, 
+        first_name: firstName, 
+        last_name: lastName 
+      })
     };
     fetch('/API/SignUp', requestOptions)
       .then(response => response.json())
@@ -101,7 +166,7 @@ function AuthForm() {
     <div className='auth-container d-flex w-100 justify-content-center align-items-center text center'>
       <MDBContainer className="mdb-container p-3 my-5 d-flex flex-column d-flex bg-light text-dark">
 
-        <MDBTabs pills justify className='mb-3 d-flex flex-row justify-content-between'>
+        <MDBTabs pills justify className='d-flex flex-row justify-content-between'>
           <MDBTabsItem>
             <MDBTabsLink onClick={() => handleJustifyClick('tab1')} active={justifyActive === 'tab1'}>
               Login
@@ -117,21 +182,41 @@ function AuthForm() {
         <MDBTabsContent>
 
           <MDBTabsPane show={justifyActive === 'tab1'}>
-
+            
+            <LoginViaVK/>
             <MDBInput wrapperClass='mb-4' label='Username' id='form0Field1' onChange={(e) => setLogin(e.target.value)} value={login} type='email'/>
             <MDBInput wrapperClass='mb-4' label='Password' id='form0Field2' onChange={(e) => setPassword(e.target.value)} value={password} type='password'/>
-            {isErrorLogin && <div className='p-3 mb-2 bg-danger text-white'>Аккаунт не существует или данные введены неверно.</div>}
+            {isErrorLogin && 
+              <MDBTypography note noteColor='danger'>
+                <strong>Ошибка авторизации.</strong> Аккаунт не существует или данные введены неверно.
+              </MDBTypography>
+            }
             <MDBBtn onClick={handleClick}>Sign in</MDBBtn>
 
           </MDBTabsPane>
 
           <MDBTabsPane show={justifyActive === 'tab2'}>
 
-            <MDBInput wrapperClass='mb-4' label='Username' id='form1Field1' onChange={(e) => setUsername(e.target.value)} value={username} type='text'/>
-            <MDBInput wrapperClass='mb-4' label='Password' id='form1Field2' onChange={(e) => setPassword1(e.target.value)} value={password1} type='password'/>
-            <MDBInput wrapperClass='mb-4' label='Repeat password' id='form1Field3' onChange={(e) => setPassword2(e.target.value)} value={password2} type='password'/>
-            {isErrorReg && <div className='p-3 mb-2 bg-danger text-white'>Ошибка регистрации. Проверьте правильность заполнения всех полей и попробуйте ещё раз.</div>}
-            <MDBBtn onClick={handleSignUp}>Sign up</MDBBtn>
+            <MDBInput wrapperClass='mt-4' label='Username' id='form1Field1' onChange={(e) => setUsername(e.target.value)} value={username} type='text'/>
+            {(unLenValid == false && username.length != 0) && <p className='text-danger my-0'><small>Username length must be 4-20</small></p>}
+            {(unCharsValid == false && username.length != 0) && <p className='text-danger my-0'><small>Username contains invalid characters</small></p>}
+            <MDBInput wrapperClass='mt-4' label='First name' id='form1Field4' onChange={(e) => setFirstName(e.target.value)} value={firstName} type='text'/>
+            {(fnLenValid == false && firstName.length != 0) && <p className='text-danger my-0'><small>First name length must be 2-20</small></p>}
+            {(fnCharsValid == false && firstName.length != 0) && <p className='text-danger my-0'><small>First name contains invalid characters</small></p>}
+            <MDBInput wrapperClass='mt-4' label='Last name' id='form1Field5' onChange={(e) => setLastName(e.target.value)} value={lastName} type='text'/>
+            {(lnLenValid == false && lastName.length != 0) && <p className='text-danger my-0'><small>Last name length must be 2-20</small></p>}
+            {(lnCharsValid == false&& lastName.length != 0) && <p className='text-danger my-0'><small>Last name contains invalid characters</small></p>}
+            <MDBInput wrapperClass='mt-4' label='Password' id='form1Field2' onChange={(e) => setPassword1(e.target.value)} value={password1} type='password'/>
+            {(pwLenValid == false && password1.length != 0) && <p className='text-danger my-0'><small>Password length must be mopre than 8</small></p>}
+            {(pwCharsValid == false && password1.length != 0) && <p className='text-danger my-0'><small>Password contains invalid characters</small></p>}
+            <MDBInput wrapperClass='mt-4' label='Repeat password' id='form1Field3' onChange={(e) => setPassword2(e.target.value)} value={password2} type='password'/>
+            {(pw2Valid == false && password2.length != 0) && <p className='text-danger my-0'><small>Passwords must match</small></p>}
+            {isErrorReg && 
+              <MDBTypography note wrapperClass='mt-4' noteColor='danger'>
+                <strong>Ошибка регистрации.</strong> Проверьте правильность заполнения всех полей и попробуйте ещё раз.
+              </MDBTypography>
+            }
+            <MDBBtn className={isDisabled ? "disabled mt-4" : "mt-4"} onClick={handleSignUp}>Sign up</MDBBtn>
 
           </MDBTabsPane>
 

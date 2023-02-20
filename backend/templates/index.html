@@ -7,22 +7,26 @@
     <title>Document</title>
 </head>
 <body>
-    <a href="{% url "social:begin" "VKOAuth2" %}">Google+</a>
-    <a href="/login/vk-oauth2"><img src="/static/lvk.png" class="avatar-3" data-toggle="tooltip" title="'Login via VKontakte'"></a>
-
-    {{user.username}}, {{balance}}
-    {% if message %}
-        <h1>{{message}}</h1>
+    Hello
+    {% if user.is_authenticated == False %}
+        Not user.is_authenticated
     {% endif %}
-    <form method="post">
-        <input type="hidden" name="action" value="make_spin">
-        {% csrf_token %}
-        <button type="submit">button</button>
-    </form>
-    <ul>
-        {% for winner in winners %}
-        <li>{{winner.winner}}, {{winner.winning_amount}}, {{winner.win_date}}</li>
-        {% endfor %}
-    </ul>
+    
+    {% if user.is_authenticated %}
+        {{user.username}}, {{balance}}
+        {% if message %}
+            <h1>{{message}}</h1>
+        {% endif %}
+        <form method="post">
+            <input type="hidden" name="action" value="make_spin">
+            {% csrf_token %}
+            <button type="submit">button</button>
+        </form>
+        <ul>
+            {% for winner in winners %}
+            <li>{{winner.winner}}, {{winner.winning_amount}}, {{winner.win_date}}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 </body>
 </html>

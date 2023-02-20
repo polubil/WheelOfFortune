@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 class Winners(models.Model):
 
-    winner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Победитель")
+    winner = models.ForeignKey("backend.MyUser", on_delete=models.CASCADE, verbose_name="Победитель")
     winning_amount = models.IntegerField(verbose_name="Сумма выигрыша")
     win_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время выигрыша")
 
@@ -37,4 +37,32 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.userbalance.save()
 
+
+class VKToken(models.Model):
+    id = models.IntegerField(null=False, unique=True, primary_key=True)
+    token = models.CharField(unique=True, max_length=250)
+    expires = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class SocialNetwork(models.Model):
+    title = models.CharField(max_length=10)
+
+
+class SocialAccount(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    network = models.ForeignKey(SocialNetwork, on_delete=models.CASCADE)
 # Create your models here.
+
+class Settings(models.Model):
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=500)
+    description = models.CharField(blank=True, null=True, max_length=1000)
+
+
+class MyUser(User):
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}' 

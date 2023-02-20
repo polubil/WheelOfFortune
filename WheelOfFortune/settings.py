@@ -37,10 +37,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'backend',
     'rest_framework',
-    'frontend'
+    'frontend',
+    'rest_framework.authtoken',
 ]
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = '51554483'
+SOCIAL_AUTH_VK_OAUTH2_SECRET = 'FpLSTYKMRlNzh13RvkzP'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'backend.views.CustomBackend'
+]
+
+SITE_ID = 1
+
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+LOGIN_REDIRECT_URL = 'index'
+
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS = 'social_core.backends.vk.VKOAuth2'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'backend.middlewares.CheckTokenMW',
 ]
 
 ROOT_URLCONF = 'WheelOfFortune.urls'
@@ -65,6 +84,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
