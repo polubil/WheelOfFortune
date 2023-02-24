@@ -17,11 +17,13 @@ from django.contrib import admin
 from django.urls import path, include
 from backend import urls as backend_urls
 from frontend import urls as frontend_urls
+from VKAuth import urls as VKAuth_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include(VKAuth_urls)),
     path('', include(backend_urls)),
     path('', include(frontend_urls)),
 ]

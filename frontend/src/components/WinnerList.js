@@ -3,20 +3,38 @@ import { createRoot } from 'react-dom/client';
 import 'bootstrap';
 import { Wheel } from 'react-custom-roulette'
 import AuthForm from './AuthForm';
+import axios from 'axios';
+
+
 
 function WinnerListElement(props) {
+
+  let user_picture = `../static/frontend/images/pictures/${props.username}.svg`
+  let default_picture = `../static/frontend/images/pictures/default.svg`
+
+  let src = user_picture
+
+  let onError = function() {
+    src = default_picture
+  } 
+
   return (
     <>
     <div className="list-element align-items-center p-2 align-content-center d-flex justify-content-between align-self-stretch px-2 m-2">
       <div>
+        { 1 == 2 &&
         <span className='winner-list-text-elem'>
           <svg height="50" width="50">
             <circle cx="25" cy="25" r="20" stroke="black" strokeWidth="3" fill="grey" />
             Sorry, your browser does not support inline SVG.  
           </svg> 
         </span>        
+        }
+        <span className='winner-list-text-elem'>
+          <img className='user-picture' src={src} onError={onError()}></img>
+        </span> 
       </div>
-      <div style={{width: 35 + "%"}}>
+      <div className='username-cont' style={{width: 35 + "%"}}>
         <span className='winner-list-text-elem text-wrap'>{props.username}</span>
       </div>
       <div style={{width: 35 + "%"}}>
@@ -48,76 +66,53 @@ class WinnerList extends Component {
       data: [],
       loaded: false,
       placeholder: "Loading",
-      elementsCount: 0,
+      elementsCount: 4,
       containerSize: [],
       listSize: [],
       emptySize: [],
       titleSize: [],
+      wheelWidth: null,
     };
     this.containerRef = React.createRef();
     this.listRef = React.createRef();
     this.titleRef = React.createRef();
     this.componentDidUpdate = this.componentDidUpdate.bind(this)
-    this.handleChangeSize = this.handleChangeSize.bind(this)
-    this.removeFromList = this.removeFromList.bind(this)
-    this.setListLen = this.setListLen.bind(this)
-  }
-
-  handleChangeSize() {
-    this.setState({
-      containerSize: [this.containerRef.current.offsetWidth, this.containerRef.current.offsetHeight],
-      listSize: [this.listRef.current.offsetWidth, this.listRef.current.offsetHeight],
-      titleSize: [this.titleRef.current.offsetWidth, this.titleRef.current.offsetHeight],
-      emptySize: [
-        this.containerRef.current.offsetWidth-(this.listRef.current.offsetWidth), 
-        this.containerRef.current.offsetHeight-(this.listRef.current.offsetHeight + this.titleRef.current.offsetHeight)
-      ]
-    });
-    console.log("resize")
-    if (
-    (this.state.emptySize[1] > 100 && this.state.elementsCount < Math.floor((this.state.emptySize[1]+this.state.listSize[1])/100)) ||
-    (this.state.emptySize[1] < 100 && this.state.elementsCount > Math.floor((this.state.emptySize[1]+this.state.listSize[1])/100))
-    ) {
-     console.log(this.state.emptySize[1])
-     this.setState({
-       elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/110) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/110)
-     }) 
-    }
-  }
-
-  componentDidMount() {
-    this.handleChangeSize()
   }
 
   componentDidUpdate() {
-    if (!(this.state.data.slice().length == this.props.winnersList.slice(0, this.state.elementsCount).length) ||
-      !(this.state.data[0] == this.props.winnersList[0])) {
+    if (this.state.wheelWidth != this.props.wheelWidth) {
       this.setState({
-        data: this.props.winnersList.slice(0, this.state.elementsCount),
+        wheelWidth: this.props.wheelWidth,
       })
     }
-    window.addEventListener("resize", this.handleChangeSize);
-    if (!(this.listRef.current.offsetWidth + this.listRef.current.offsetHeight == this.state.listSize[0] + this.state.listSize[1])) {
-      this.handleChangeSize()
-    }
-    if (this.state.elementsCount == 0) {
-      console.log(this.state.emptySize[1])
+
+    if (this.state.data != this.props.winnersList) {
       this.setState({
-        elementsCount: Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90) < 4 ? 4 : Math.floor((this.state.emptySize[1]+this.state.listSize[1])/90)
+        data: this.props.winnersList
       })
+      console.log(this.state.data)
+    }
+
+    if (this.props.wheelWidth != this.state.wheelWidth) {
+      this.setState({
+        wheelWidth: this.props.wheelWidth
+      })
+    }
+
+    if (this.state.wheelWidth > 0) {
+      if ((Math.floor(this.state.wheelWidth / 95) < 8) && (Math.floor(this.state.wheelWidth / 95) != this.state.elementsCount )) {
+        this.setState({
+          elementsCount: Math.floor(this.state.wheelWidth / 95),
+        })
+      }
+      if ((Math.floor(this.state.wheelWidth / 95) > 7) && (this.state.elementsCount != 7 )) {
+        this.setState({
+          elementsCount: 7,
+        })
+      }
     }
   }
 
-  setListLen(n) {
-    this.setState({
-      elementsCount: n,
-    })
-  }
-  removeFromList() {
-    this.setState({
-      elementsCount: this.state.elementsCount - 1,
-    })
-  }
 
   render() {
     return (
@@ -127,9 +122,15 @@ class WinnerList extends Component {
           <span ref={this.titleRef} className='winners-title'>WINNERS</span>
         </div>
         <div className='d-flex flex-column' ref={this.listRef}>
-          {this.state.data.slice(0, this.state.elementsCount).map(winner => {
+          {this.state.data.slice(0, this.state.elementsCount).map(data => {
             return (
-              <WinnerListElement key={winner.id} username={winner.winner} winning_amount={winner.winning_amount} win_date={winner.win_date}/>
+              <WinnerListElement 
+                key={data.id}
+                username={data.winner.user.username}
+                user_str={data.winner.user.first_name + " " + data.winner.user.first_name} 
+                winning_amount={data.winning_amount} 
+                win_date={data.win_date}
+              />
             );
           })}
         </div>
@@ -296,21 +297,33 @@ class WheelContainer extends React.Component {
       mustSpin: this.props.mustSpin,
       prizes: [],
       prizeIndex: this.props.prizeIndex,
-    }
+      wheelWidth: null,
+    };
+    this.wheelContainerRef = React.createRef();
     this.handleStopSpinning = this.handleStopSpinning.bind(this)
   }
 
+  setWheelWidth(width) {
+    this.setState({
+      wheelWidth: width,
+    })
+    this.props.setWheelWidth(this.state.wheelWidth)
+  }
+
+  
   async getPrizes() {
     let obj;
-    const res = await fetch('/API/Prizes')
+    const res = await fetch('/API/Spinner')
     obj = await res.json();
     let data = []
 
     for (let i in obj) {
       if (i % 2 == 0) {
-        data.push({ option: obj[i], style: { backgroundColor: "#f2af05", textColor: '#ffffff' }});
+        if (obj[i] != "JACKPOT") {
+          data.push({ option: obj[i], style: { backgroundColor: "#f2af05", textColor: '#ffffff' }});
+        }
       } else {
-        data.push({ option: obj[i], style: { backgroundColor: "#32312f", textColor: '#ffffff' } });
+        data.push({ option: obj[i], style: { backgroundColor: "#32312f", textColor: '#ffffff' }});
       }
     }
 
@@ -321,15 +334,27 @@ class WheelContainer extends React.Component {
 
   componentDidMount() {
     this.getPrizes()
+    window.addEventListener("resize", () => this.setWheelWidth(this.wheelContainerRef.current.offsetWidth))
   }
 
   componentDidUpdate() {
-    if (!this.props.mustSpin == this.state.mustSpin) {
+    if (this.state.wheelWidth != this.wheelContainerRef.current.offsetWidth) {
+      this.setState({
+        wheelWidth: this.wheelContainerRef.current.offsetWidth,
+      })
+      this.props.setWheelWidth(this.state.wheelWidth)
+    }
+
+    if (this.state.wheelWidth != this.props.wheelWidth) {
+      this.props.setWheelWidth(this.state.wheelWidth)
+    }
+
+    if (this.props.mustSpin != this.state.mustSpin) {
       this.setState({
         mustSpin: this.props.mustSpin
       })
     }
-    if (!(this.props.prizeIndex == this.state.prizeIndex)) {
+    if (this.props.prizeIndex != this.state.prizeIndex) {
       this.setState({
         prizeIndex: this.props.prizeIndex
       })
@@ -344,21 +369,21 @@ class WheelContainer extends React.Component {
   render() {
     return (
       <>
-        <div className='my-container flex-grow-1 m-2'>
-          <Wheel
-            radiusLineWidth = {0}
-            textDistance = {80}
-            outerBorderColor = "#bfbebd"
-            outerBorderWidth = {20}
-            fontFamily = "Luckiest Guy"
-            fontSize = {40}
-            perpendicularText = {true}
-            spinDuration = {1.0}
-            onStopSpinning={this.handleStopSpinning}
-            mustStartSpinning={this.state.mustSpin}
-            prizeNumber={this.state.prizeIndex}
-            data={this.state.prizes}
-            />
+        <div ref={this.wheelContainerRef} className='my-container flex-fill m-2'>
+            <Wheel
+              radiusLineWidth = {0}
+              textDistance = {80}
+              outerBorderColor = "#bfbebd"
+              outerBorderWidth = {20}
+              fontFamily = "Luckiest Guy"
+              fontSize = {40}
+              perpendicularText = {true}
+              spinDuration = {1.0}
+              onStopSpinning={this.handleStopSpinning}
+              mustStartSpinning={this.state.mustSpin}
+              prizeNumber={this.state.prizeIndex}
+              data={this.state.prizes}
+              />
         </div>
       </>
     )
@@ -376,8 +401,10 @@ class GameContainer extends React.Component {
       layoutFirstText: null,
       layoutSecondText: null,
       buttonDisabled: false,
+      wheelWidth: null,
     };
     this.handleClick = this.handleClick.bind(this)
+    this.setWheelWidth = this.setWheelWidth.bind(this)
     this.hideLayout = this.hideLayout.bind(this)
     this.startWheelSpin = this.startWheelSpin.bind(this)
     this.handleStopSpinning = this.handleStopSpinning.bind(this)
@@ -400,10 +427,14 @@ class GameContainer extends React.Component {
 
 
   componentDidUpdate() {
-    if (!(this.state.balance == this.props.balance) && (this.state.balance == 0) && this.state.responseBalance == null){
+    if (this.state.balance != this.props.balance && this.state.balance == 0 && this.state.responseBalance == null){
       this.setState({
         balance: this.props.balance,
       })
+    }
+
+    if (this.state.wheelWidth != this.props.wheelWidth) {
+      this.props.setWheelWidth(this.state.wheelWidth)
     }
   }
 
@@ -422,11 +453,11 @@ class GameContainer extends React.Component {
       .then(response => response.json())
       .then(response => {
         this.setState({
-          prizeIndex: response["prize_index"],
-          prize: response["result"],
+          prizeIndex: response["result"],
+          prize: response["response"],
           responseBalance: response["user_balance"],
         })
-        this.setLayoutText(response["result"])
+        this.setLayoutText(response["response"])
       });
   }
 
@@ -440,20 +471,20 @@ class GameContainer extends React.Component {
   }
 
   setLayoutText(prize) {
-    if (prize == 0) {
+    if (prize == -1) {
       this.setState({
         layoutFirstText: "YOU WON NOTHING, TRY AGAIN!",
         layoutImage: false,
       })
     }
-    else if (prize == -1) {
+    else if (prize == -2) {
       this.setState({
         layoutFirstText: "YOU HAVE NOT ENOUGTH MONEY!",
         layout: true,
         layoutImage: false,
       }) 
     }
-    else if (prize > 0) {
+    else if (prize >= 0) {
       this.setState({
         layoutFirstText: `YOU WIN!`,
         layoutSecondText: `${prize}`,
@@ -482,12 +513,19 @@ class GameContainer extends React.Component {
       layout: false,
     })
   }
+
+  setWheelWidth(width) {
+    this.setState({
+      wheelWidth: width,
+    })
+    this.props.setWheelWidth(this.state.wheelWidth)
+  }
   
   render() {
     return (
       <>
         <div className='d-flex flex-column justify-content-between'>
-          <WheelContainer startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
+          <WheelContainer wheelWidth={this.state.wheelWidth} setWheelWidth={this.setWheelWidth} startWheelSpin={this.startWheelSpin} prizeIndex={this.state.prizeIndex} onSpinningEnd={this.handleStopSpinning} mustSpin={this.state.mustSpin}/>
           <InfoGroup 
             buttonDisabled={this.state.buttonDisabled}
             layoutImage={this.state.layoutImage}
@@ -512,7 +550,7 @@ class App extends React.Component {
       balance: 0,
       username: "",
       userLoggedIn: null,
-      windowWidth: window.innerWidth,
+      wheelWidth: null,
       loadedData: {
         balance: false,
         username: false,
@@ -521,13 +559,7 @@ class App extends React.Component {
       }
     };
     this.getLastWinners = this.getLastWinners.bind(this)
-    this.handleWindowResize = this.handleWindowResize.bind(this)
-  }
-
-  handleWindowResize() {
-    this.setState({
-      windowWidth: window.innerWidth,
-    }) 
+    this.setWheelWidth = this.setWheelWidth.bind(this)
   }
 
   isLoaded() {
@@ -539,7 +571,7 @@ class App extends React.Component {
   }
 
   componentDidUpdate() {
-    if (!(this.isLoaded() == this.state.isLoaded)) {
+    if (this.isLoaded() != this.state.isLoaded) {
       this.setState({isLoaded: this.isLoaded()})
       this.componentDidMount()
     }
@@ -590,24 +622,31 @@ class App extends React.Component {
 
   componentDidMount() {
     this.isUserLoggedIn()
-
-    window.addEventListener('resize', this.handleWindowResize);   
   }; 
 
-  render() {
-    const classes = `p-1 container-m d-flex flex-${this.state.windowWidth < 1000 ? "column" : "row"} justify-content-center`
-    
+  setWheelWidth(width) {
+    this.setState({
+      wheelWidth: width,
+    })
+  }
+
+  render() {    
     if (this.state.userLoggedIn) {
       if (this.state.isLoaded == true) {
+        const gradiBodyStyle = (`
+        body {
+          background: radial-gradient(85.48% 79.62% at 50% 50%, #75BDFF 0%, #020065 100%);;
+        }
+      `)
         return (
           <>
             <div className="p-1 app-container d-flex flex-column justify-content-center text-center">
               <span className='main-title my-2 fs-1'>
                 WHEEL OF FORTUNE!
               </span>
-              <div className={classes}>
-                <GameContainer updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
-                <WinnerList winnersList={this.state.winnersList} />   
+              <div className='p-1 app-subcontainer container-m d-flex justify-content-center'>
+                <GameContainer wheelWidth={this.state.wheelWidth} setWheelWidth={this.setWheelWidth} updateWinners={this.getLastWinners} prizer={[1, 2, 3, 4, 5, 6]} balance={this.state.balance}/>
+                <WinnerList wheelWidth={this.state.wheelWidth} winnersList={this.state.winnersList} />   
               </div>
             </div>
           </>
@@ -616,16 +655,24 @@ class App extends React.Component {
       else {
         return (
           <>
-          <div className="spinner-border m-5 loading-spinner text-light" role="status">
-            <span className="visually-hidden">Загрузка...</span>
-          </div>
+            <div className="spinner-border m-5 loading-spinner text-light" role="status">
+              <span className="visually-hidden">Загрузка...</span>
+            </div>
           </>
         )
       }
     }
     else {
+      const whiteBodyStyle = (`
+        body {
+          background: rgba(251, 251, 251, var(--mdb-bg-opacity)) !important;
+        }
+      `)
       return (
-        <AuthForm></AuthForm>
+        <>
+          <style>{whiteBodyStyle}</style>
+          <AuthForm></AuthForm>
+        </>
       )
     }
   }

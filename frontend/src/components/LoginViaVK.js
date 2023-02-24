@@ -19,7 +19,7 @@ function LoginViaVK() {
 
     const params = {
         client_id: 51554511,
-        redirect_uri: "http://localhost:8000/fr",
+        redirect_uri: "http://localhost:8000/",
         scope:"email, first_name, last_name",
         response_type:"code",
     }
@@ -31,11 +31,11 @@ function LoginViaVK() {
 
     const loginRequest = async () => {
         if (code) {
-            fetch(`API/VKLogin?code=${code}`, {method: 'GET'})
+            fetch(`VKAuth?code=${code}`, {method: 'GET'})
               .then(response => response.json())
               .then(response => {
                 if (response["code"] == 1) {
-                window.location.href = 'http://localhost:8000/fr'
+                    window.location.href = params.redirect_uri
               }
             })
         }
@@ -43,7 +43,7 @@ function LoginViaVK() {
 
     return (
         <>
-            <MDBBtn onClick={getCode} className='mb-4'>Login via VK</MDBBtn>
+            <MDBBtn onClick={getCode} className='mb-2 fs-5 w-100 py-2'>Sign in via <strong>VK</strong></MDBBtn>
         </>
     )
 }

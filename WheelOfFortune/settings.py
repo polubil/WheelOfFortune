@@ -42,14 +42,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'frontend',
     'rest_framework.authtoken',
+    'VKAuth',
 ]
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '51554483'
 SOCIAL_AUTH_VK_OAUTH2_SECRET = 'FpLSTYKMRlNzh13RvkzP'
 
+CLIENT_ID = 51554511
+REDIRECT_URI = "http://localhost:8000/"
+SCOPE = "email, first_name, last_name"
+CLIENT_SECRET = "kMEL9u3y0wmr71RXkEhk"
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'backend.views.CustomBackend'
+    'VKAuth.backends.CustomBackend'
 ]
 
 SITE_ID = 1
@@ -57,8 +63,6 @@ SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 LOGIN_REDIRECT_URL = 'index'
-
-SOCIAL_AUTH_AUTHENTICATION_BACKENDS = 'social_core.backends.vk.VKOAuth2'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -68,7 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'backend.middlewares.CheckTokenMW',
+    'VKAuth.middlewares.CheckTokenMW',
 ]
 
 ROOT_URLCONF = 'WheelOfFortune.urls'
