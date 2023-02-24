@@ -45,13 +45,14 @@ INSTALLED_APPS = [
     'VKAuth',
 ]
 
-SOCIAL_AUTH_VK_OAUTH2_KEY = '51554483'
-SOCIAL_AUTH_VK_OAUTH2_SECRET = 'FpLSTYKMRlNzh13RvkzP'
-
 CLIENT_ID = 51554511
 REDIRECT_URI = "http://localhost:8000/"
 SCOPE = "email, first_name, last_name"
 CLIENT_SECRET = "kMEL9u3y0wmr71RXkEhk"
+
+TAKE_PROFILE_PICTURE = True
+PROFILE_MODEL = 'UserProfile'
+APP_LABEL = 'backend'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

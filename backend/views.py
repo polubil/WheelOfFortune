@@ -62,12 +62,11 @@ class index(TemplateView):
 
 class UserBalanceAPI(APIView):
 
-    def get(self, request, format=None):
+
+    def get(self, request):
         if request.user.is_authenticated:
             user = models.UserProfile.objects.get(user=request.user)
             user_balance = user.get_user_balance()
-            winners = models.Winners.last_20_winners()
-            winners_serializer = WinnersSerializers(winners, many=True)
             return Response({"username": user.get_username(), "user_balance": user_balance}, 200)
         else: 
             return Response({"error": "user is not logging in."}, 401)

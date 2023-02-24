@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from VKAuth import models as vkauth_models
 from . import utils
 
 class Winners(models.Model):
@@ -22,6 +23,11 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, verbose_name=("Пользователь"), on_delete=models.CASCADE)
     balance = models.IntegerField(verbose_name="Баланс", default=1000)
     picture = models.ImageField()
+    
+
+    def set_picture(self, picture_path):
+        self.picture = picture_path
+        print("done")
 
 
     def get_user_balance(self):
@@ -52,18 +58,14 @@ class UserProfile(models.Model):
         return picture_path
 
     def __str__(self):
-        return "%s %s" % self.user.first_name, self.user.last_login
+        return "%s %s" % (self.user.first_name, self.user.last_name)
 
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance, picture=UserProfile.generate_picture(instance))
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.userprofile.save()
-
+        up = UserProfile.objects.create(user=instance, picture=UserProfile.generate_picture(instance))
+        up.save()
 
 
 class MyUser(User):
@@ -73,4 +75,8 @@ class MyUser(User):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+    
+    def send_pizza(self, toppings, size):
+        pizza_done.send(sender=self.__class__, toppings=toppings, size=size)
+        ...
     

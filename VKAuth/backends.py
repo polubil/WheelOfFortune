@@ -5,7 +5,6 @@ from django.contrib.auth.backends import BaseBackend
 from typing import Any
 
 
-
 class CustomBackend(BaseBackend):
 
     def authenticate(request, username=None, token=None, expires_in=None, **kwargs: Any):

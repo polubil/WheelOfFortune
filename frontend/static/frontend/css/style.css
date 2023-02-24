@@ -118,7 +118,7 @@ body {
 .info-group-text {
     font-family: 'Luckiest Guy';
     font-weight: 400;
-    font-size: 2.5vh;
+    font-size: 2.1vh;
     line-height: .7vh;
     text-align: center;
     letter-spacing: 1px;
@@ -183,6 +183,9 @@ img[alt~="roulette-static"] {
 
 
 @media only screen and (max-width: 768px) {
+    html {
+        display: block;
+    }
     .app-subcontainer {
         flex-direction: column;
     }
@@ -190,6 +193,9 @@ img[alt~="roulette-static"] {
 @media only screen and (min-width: 769px) {
     .app-subcontainer {
         flex-direction: row;
+    }
+    html {
+        display: flex;
     }
   }
 

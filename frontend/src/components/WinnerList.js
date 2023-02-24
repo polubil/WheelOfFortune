@@ -12,30 +12,24 @@ function WinnerListElement(props) {
   let user_picture = `../static/frontend/images/pictures/${props.username}.svg`
   let default_picture = `../static/frontend/images/pictures/default.svg`
 
-  let src = user_picture
-
-  let onError = function() {
-    src = default_picture
-  } 
-
   return (
     <>
     <div className="list-element align-items-center p-2 align-content-center d-flex justify-content-between align-self-stretch px-2 m-2">
       <div>
         { 1 == 2 &&
-        <span className='winner-list-text-elem'>
+          <span className='winner-list-text-elem'>
           <svg height="50" width="50">
             <circle cx="25" cy="25" r="20" stroke="black" strokeWidth="3" fill="grey" />
             Sorry, your browser does not support inline SVG.  
           </svg> 
-        </span>        
+          </span>        
         }
         <span className='winner-list-text-elem'>
-          <img className='user-picture' src={src} onError={onError()}></img>
+          <img className='user-picture' src={user_picture} onError={(event)=>event.target.setAttribute("src",default_picture)}></img>
         </span> 
       </div>
       <div className='username-cont' style={{width: 35 + "%"}}>
-        <span className='winner-list-text-elem text-wrap'>{props.username}</span>
+        <span className='winner-list-text-elem text-wrap'>{props.user_str}</span>
       </div>
       <div style={{width: 35 + "%"}}>
         <span className='winner-list-text-elem'>{props.winning_amount} <img className='coins_img' src="../static/frontend/images/coins1.svg" alt="coins" width="40px" height="25px"></img></span>
