@@ -37,6 +37,7 @@
     "eslint": "^8.34.0",
     "fs": "^0.0.1-security",
     "jquery": "^3.6.3",
+    "loader-utils": "^2.0.4",
     "mdb-react-ui-kit": "^5.1.0",
     "node": "^19.6.0",
     "normalize.css": "^8.0.1",
