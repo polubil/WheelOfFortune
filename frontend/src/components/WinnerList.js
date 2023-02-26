@@ -121,7 +121,7 @@ class WinnerList extends Component {
               <WinnerListElement 
                 key={data.id}
                 username={data.winner.user.username}
-                user_str={data.winner.user.first_name + " " + data.winner.user.first_name} 
+                user_str={data.winner.user.first_name + " " + data.winner.user.last_name} 
                 winning_amount={data.winning_amount} 
                 win_date={data.win_date}
               />
