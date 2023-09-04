@@ -1,5 +1,6 @@
 # WheelOfFortune
 Simple game. Spend coins to spin the wheel, spin the wheel to get coins.
+Based on Django Rest Framework, ReactJS.
 
 # Preview
 
