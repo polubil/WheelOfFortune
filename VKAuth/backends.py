@@ -11,17 +11,17 @@ class CustomBackend(BaseBackend):
         if models.VKToken.objects.filter(id=username).exists():
             expires = models.VKToken.objects.get(id=username).expires
             if expires < dt.datetime.now(expires.tzinfo):
-                VKToken = models.VKToken.objects.get(id=username)
-                VKToken.token = token
-                VKToken.expires = dt.datetime.now()+dt.timedelta(seconds=expires_in)
-                VKToken.save()
+                vk_token = models.VKToken.objects.get(id=username)
+                vk_token.token = token
+                vk_token.expires = dt.datetime.now()+dt.timedelta(seconds=expires_in)
+                vk_token.save()
         else:
-            VKToken = models.VKToken.objects.create(
+            vk_token = models.VKToken.objects.create(
                 id = username,
                 token = token,
                 expires = dt.datetime.now()+dt.timedelta(seconds=expires_in),
             )
-            VKToken.save()
+            vk_token.save()
         user = models.User.objects.filter(username=username)
         if user.exists():
             return user[0]
@@ -33,8 +33,5 @@ class CustomBackend(BaseBackend):
             user = User.objects.get(id=user_id)
             if user:
                 return user
-            else: 
-                return None
-        else: 
-            return None
+        return None
         
