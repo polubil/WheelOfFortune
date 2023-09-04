@@ -1,4 +1,12 @@
 
+<<<<<<< HEAD
 frontend/node_modules
+=======
+<<<<<<< HEAD
+frontend/node_modules
+=======
+frontend/node_modules/react-custom-roulette/
+>>>>>>> 300cf4f23b2a782709a880b6c2bff7ef7ff84578
+>>>>>>> main
 *.sqlite3
 *.svg

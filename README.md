@@ -6,7 +6,8 @@ Based on Django Rest Framework, ReactJS.
 
 ![image](https://github.com/polubil/WheelOfFortune/assets/110416709/af60dfdc-9cf3-49be-af50-748688ec1dca)
 
-![image](https://github.com/polubil/WheelOfFortune/assets/110416709/41ff4882-af61-4e3e-9d90-58817c5c0849)
+![image](https://github.com/polubil/WheelOfFortune/assets/110416709/e7cc02c0-7155-4c55-ad5d-df884df7a01f)
+
 
 # Usage
 1. Clone the Repo:
