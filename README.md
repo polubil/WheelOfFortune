@@ -1,6 +1,12 @@
 # WheelOfFortune
 Simple game. Spend coins to spin the wheel, spin the wheel to get coins.
 
+# Preview
+
+![image](https://github.com/polubil/WheelOfFortune/assets/110416709/af60dfdc-9cf3-49be-af50-748688ec1dca)
+
+![image](https://github.com/polubil/WheelOfFortune/assets/110416709/41ff4882-af61-4e3e-9d90-58817c5c0849)
+
 # Usage
 1. Clone the Repo:
 
