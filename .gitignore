@@ -1,4 +1,4 @@
 
-frontend/node_modules/react-custom-roulette/
+frontend/node_modules
 *.sqlite3
 *.svg
